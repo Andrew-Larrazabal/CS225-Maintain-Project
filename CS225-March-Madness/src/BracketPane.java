@@ -1,19 +1,15 @@
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -22,8 +18,6 @@ import javafx.scene.text.TextAlignment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import javafx.scene.layout.Region;
 
 /**
  * Created by Richard and Ricardo on 5/3/17.
@@ -341,16 +335,30 @@ public class BracketPane extends BorderPane {
      * Note, this is a vague model. TODO: MAKE MODULAR
      */
     private class Root extends Pane {
-
+        //BUGFIX(Josh): Increase width to prevent longer team names from overflowing box
+        //TODO: Calculate needed width based on longest team name, instead of hardcoding?
+        private static final int NODE_WIDTH = 135;
+        private static final int PADDING = 25;
         private int location;
 
         public Root(int location) {
             this.location = location;
-            createVertices(420, 200, 100, 20, 0, 0);
-            createVertices(320, 119, 100, 200, 1, 0);
-            createVertices(220, 60, 100, 100, 2, 200);
-            createVertices(120, 35, 100, 50, 4, 100);
-            createVertices(20, 25, 100, 25, 8, 50);
+            //CLEANUP(Josh): Use while loop, calculate parameters algorithmically instead of hardcoding
+            int matchCount = 8;
+            int startX = PADDING;
+            int startY = PADDING;
+            int yDiff = 25;
+
+            while (matchCount > 0) {
+                createBracketColumn(startX, startY, NODE_WIDTH, yDiff, matchCount, yDiff * 2);
+
+                startY += yDiff / 2;
+                yDiff *= 2;
+                startX += NODE_WIDTH;
+                matchCount /= 2;
+            }
+            createBracketColumn(startX, startY, NODE_WIDTH, yDiff, matchCount, 0);
+
             for (BracketNode n : nodes) {
                 n.setOnMouseClicked(clicked);
                 n.setOnMouseEntered(enter);
@@ -358,31 +366,38 @@ public class BracketPane extends BorderPane {
             }
         }
 
+        //CLEANUP(Josh): Gave method & parameters more descriptive names, added @params to Javadoc
         /**
          * The secret sauce... well not really,
          * Creates 3 lines in appropriate location unless it is the last line.
          * Adds these lines and "BracketNodes" to the Pane of this inner class
+         * @param startX        Initial x position of first BracketNode
+         * @param startY        Initial y position of first BracketNode
+         * @param nodeWidth     Width of each BracketNode
+         * @param yDiff         Spacing between pairs of BracketNodes in a match
+         * @param matchCount    Amount of matches in this column (0 to create single BracketNode)
+         * @param yIncrement    Spacing between each match (0 to create single BracketNode)
          */
-        private void createVertices(int iX, int iY, int iXO, int iYO, int num, int increment) {
-            int y = iY;
-            if (num == 0 && increment == 0) {
-                BracketNode last = new BracketNode("", iX, y - 20, iXO, 20);
+        private void createBracketColumn(int startX, int startY, int nodeWidth, int yDiff, int matchCount, int yIncrement) {
+            int y = startY;
+            if (matchCount == 0 && yIncrement == 0) {
+                BracketNode last = new BracketNode("", startX, y - 20, nodeWidth, 20);
                 nodes.add(last);
-                getChildren().addAll(new Line(iX, iY, iX + iXO, iY), last);
+                getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
                 last.setName(currentBracket.getBracket().get(location));
                 bracketMap.put(last, location);
                 nodeMap.put(location, last);
             } else {
                 ArrayList<BracketNode> aNodeList = new ArrayList<>();
-                for (int i = 0; i < num; i++) {
-                    Point2D tl = new Point2D(iX, y);
-                    Point2D tr = new Point2D(iX + iXO, y);
-                    Point2D bl = new Point2D(iX, y + iYO);
-                    Point2D br = new Point2D(iX + iXO, y + iYO);
-                    BracketNode nTop = new BracketNode("", iX, y - 20, iXO, 20);
+                for (int i = 0; i < matchCount; i++) {
+                    Point2D tl = new Point2D(startX, y);
+                    Point2D tr = new Point2D(startX + nodeWidth, y);
+                    Point2D bl = new Point2D(startX, y + yDiff);
+                    Point2D br = new Point2D(startX + nodeWidth, y + yDiff);
+                    BracketNode nTop = new BracketNode("", startX, y - 20, nodeWidth, 20);
                     aNodeList.add(nTop);
                     nodes.add(nTop);
-                    BracketNode nBottom = new BracketNode("", iX, y + (iYO - 20), iXO, 20);
+                    BracketNode nBottom = new BracketNode("", startX, y + (yDiff - 20), nodeWidth, 20);
                     aNodeList.add(nBottom);
                     nodes.add(nBottom);
                     Line top = new Line(tl.getX(), tl.getY(), tr.getX(), tr.getY());
@@ -390,9 +405,9 @@ public class BracketPane extends BorderPane {
                     Line right = new Line(tr.getX(), tr.getY(), br.getX(), br.getY());
                     getChildren().addAll(top, bottom, right, nTop, nBottom);
                     isTop = !isTop;
-                    y += increment;
+                    y += yIncrement;
                 }
-                ArrayList<Integer> tmpHelp = helper(location, num);
+                ArrayList<Integer> tmpHelp = helper(location, matchCount);
                 for (int j = 0; j < aNodeList.size(); j++) {
                     //System.out.println(currentBracket.getBracket().get(tmpHelp.get(j)));
                     aNodeList.get(j).setName(currentBracket.getBracket().get(tmpHelp.get(j)));
