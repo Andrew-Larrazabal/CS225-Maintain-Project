@@ -14,4 +14,4 @@ javafx {
 }
 
 sourceSets.main.java.srcDir("src")
-sourceSets.main.resources.srcDir("resources")
+sourceSets.main.resources.srcDir("src")
