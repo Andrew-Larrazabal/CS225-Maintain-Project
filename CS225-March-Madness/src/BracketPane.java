@@ -423,10 +423,10 @@ public class BracketPane extends BorderPane {
     /**
      * The BracketNode model for the Graphical display of the "Bracket"
      */
-    private class BracketNode extends Pane {
+    private class BracketNode extends HBox {
         private String teamName;
-        private Rectangle rect;
         private Label name;
+        private StackPane infoButton;
 
         /**
          * Creates a BracketNode with,
@@ -440,14 +440,21 @@ public class BracketPane extends BorderPane {
         public BracketNode(String teamName, int x, int y, int rX, int rY) {
             this.setLayoutX(x);
             this.setLayoutY(y);
+            this.setPrefSize(rX, rY);
             this.setMaxSize(rX, rY);
             this.teamName = teamName;
-            rect = new Rectangle(rX, rY);
-            rect.setFill(Color.TRANSPARENT);
+
+            Circle buttonCircle = new Circle((double) rY / 2.0 - 2.0);
+            buttonCircle.setFill(Color.LIGHTBLUE);
+            Label buttonLabel = new Label("i");
+            infoButton = new StackPane(buttonCircle, buttonLabel);
+            infoButton.setVisible(!teamName.isEmpty());
+
             name = new Label(teamName);
-            // setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
-            name.setTranslateX(5);
-            getChildren().addAll(name, rect);
+
+            //setSpacing(rY / 2.0);
+            setAlignment(Pos.CENTER_LEFT);
+            getChildren().addAll(infoButton, name);
         }
 
         /**
@@ -463,6 +470,7 @@ public class BracketPane extends BorderPane {
         public void setName(String teamName) {
             this.teamName = teamName;
             name.setText(teamName);
+            infoButton.setVisible(!teamName.isEmpty());
         }
     }
 }
