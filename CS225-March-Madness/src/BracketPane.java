@@ -316,36 +316,21 @@ public class BracketPane extends BorderPane {
 
     public Pane createFinalFour() {
         Pane finalPane = new Pane();
-        BracketNode nodeFinal0 = new BracketNode("", 162, 300, 70, 0);
-        BracketNode nodeFinal1 = new BracketNode("", 75, 400, 70, 0);
-        BracketNode nodeFinal2 = new BracketNode("", 250, 400, 70, 0);
-        nodeFinal0.setName(currentBracket.getBracket().get(0));
-        nodeFinal1.setName(currentBracket.getBracket().get(1));
-        nodeFinal2.setName(currentBracket.getBracket().get(2));
-        finalPane.getChildren().add(nodeFinal0);
-        finalPane.getChildren().add(nodeFinal1);
-        finalPane.getChildren().add(nodeFinal2);
-        bracketMap.put(nodeFinal1, 1);
-        bracketMap.put(nodeFinal2, 2);
-        bracketMap.put(nodeFinal0, 0);
-        nodeMap.put(1, nodeFinal1);
-        nodeMap.put(2, nodeFinal2);
-        nodeMap.put(0, nodeFinal0);
+        //CLEANUP(Josh): Use a loop
+        int[] xPos = {162, 75, 250};
+        int[] yPos = {300, 400, 400};
 
-        nodeFinal0.setOnMouseClicked(clicked);
-        nodeFinal0.setOnMouseDragEntered(enter);
-        nodeFinal0.setOnMouseDragExited(exit);
-
-        nodeFinal1.setOnMouseClicked(clicked);
-        nodeFinal1.setOnMouseDragEntered(enter);
-        nodeFinal1.setOnMouseDragExited(exit);
-
-        nodeFinal2.setOnMouseClicked(clicked);
-        nodeFinal2.setOnMouseDragEntered(enter);
-        nodeFinal2.setOnMouseDragExited(exit);
-        nodeFinal0.setStyle("-fx-border-color: darkblue");
-        nodeFinal1.setStyle("-fx-border-color: darkblue");
-        nodeFinal2.setStyle("-fx-border-color: darkblue");
+        for (int i = 0; i < xPos.length; i++) {
+            String teamName = currentBracket.getBracket().get(i);
+            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 70, 0);
+            finalPane.getChildren().add(nodeFinal);
+            bracketMap.put(nodeFinal, i);
+            nodeMap.put(i, nodeFinal);
+            nodeFinal.setOnMouseClicked(clicked);
+            nodeFinal.setOnMouseDragEntered(enter);
+            nodeFinal.setOnMouseDragExited(exit);
+            nodeFinal.setStyle("-fx-border-color: darkblue");
+        }
         finalPane.setMinWidth(400.0);
 
         return finalPane;
