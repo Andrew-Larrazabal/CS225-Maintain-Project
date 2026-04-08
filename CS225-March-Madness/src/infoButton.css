@@ -1,0 +1,9 @@
+.info-button .circle {
+    -fx-fill: #ADE;
+}
+.info-button:hover .circle {
+    -fx-fill: #9CD;
+}
+.info-button:pressed .circle {
+    -fx-fill: #8BC;
+}

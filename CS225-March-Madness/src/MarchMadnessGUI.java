@@ -83,7 +83,8 @@ public class MarchMadnessGUI extends Application {
         try{
             teamInfo=new TournamentInfo();
             startingBracket= new Bracket(teamInfo.loadStartingBracket());
-            simResultBracket=new Bracket(teamInfo.loadStartingBracket());
+            //CLEANUP(Josh): Clone loaded bracket instead of reloading from disk
+            simResultBracket=new Bracket(startingBracket);
         } catch (IOException ex) {
             showError(new Exception("Can't find "+ex.getMessage(),ex),true);
         }
@@ -173,7 +174,7 @@ public class MarchMadnessGUI extends Application {
       */
     private void viewBracket(){
        selectedBracket=simResultBracket;
-       bracketPane=new BracketPane(selectedBracket);
+       bracketPane=new BracketPane(selectedBracket, teamInfo);
        GridPane full = bracketPane.getFullPane();
        full.setAlignment(Pos.CENTER);
        full.setDisable(true);
@@ -187,7 +188,7 @@ public class MarchMadnessGUI extends Application {
    private void chooseBracket(){
         //login.setDisable(true);
         btoolBar.setDisable(false);
-        bracketPane=new BracketPane(selectedBracket);
+        bracketPane=new BracketPane(selectedBracket, teamInfo);
         displayPane(bracketPane);
 
     }
@@ -199,7 +200,7 @@ public class MarchMadnessGUI extends Application {
       
       
       bracketPane.clear();
-      bracketPane=new BracketPane(selectedBracket);
+      bracketPane=new BracketPane(selectedBracket, teamInfo);
       displayPane(bracketPane);
         
     }
@@ -211,7 +212,7 @@ public class MarchMadnessGUI extends Application {
         if(confirmReset()){
             //horrible hack to reset
             selectedBracket=new Bracket(startingBracket);
-            bracketPane=new BracketPane(selectedBracket);
+            bracketPane=new BracketPane(selectedBracket, teamInfo);
             displayPane(bracketPane);
         }
     }
@@ -294,7 +295,7 @@ public class MarchMadnessGUI extends Application {
         resetButton.setOnAction(e->reset());
         finalizeButton.setOnAction(e->finalizeBracket());
         back.setOnAction(e->{
-            bracketPane=new BracketPane(selectedBracket);
+            bracketPane=new BracketPane(selectedBracket, teamInfo);
             displayPane(bracketPane);
         });
     }

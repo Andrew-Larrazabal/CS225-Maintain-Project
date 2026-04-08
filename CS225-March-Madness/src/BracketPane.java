@@ -1,8 +1,8 @@
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.MouseButton;
@@ -15,7 +15,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -29,10 +28,6 @@ public class BracketPane extends BorderPane {
      */
     private static ArrayList<BracketNode> nodes;
     /**
-     * Used to initiate the paint of the bracket nodes
-     */
-    private static boolean isTop = true;
-    /**
      * Maps the text "buttons" to it's respective grid-pane
      */
     private HashMap<StackPane, Pane> panes;
@@ -40,6 +35,9 @@ public class BracketPane extends BorderPane {
      * Reference to the current bracket.
      */
     private Bracket currentBracket;
+
+    //CLEANUP(Josh): Import existing TournamentInfo instead of re-creating it from disk every time
+    private TournamentInfo teamInfo;
     /**
      * Reference to active subtree within current bracket.
      */
@@ -92,27 +90,6 @@ public class BracketPane extends BorderPane {
                 currentBracket.moveTeamUp(treeNum);
             }
         }
-        //added by matt 5/7, shows the teams info if you right click
-        else if (mouseEvent.getButton().equals(MouseButton.SECONDARY)) {
-            String text = "";
-            BracketNode n = (BracketNode) mouseEvent.getSource();
-            int treeNum = bracketMap.get(n);
-            String teamName = currentBracket.getBracket().get(treeNum);
-            try {
-                TournamentInfo info = new TournamentInfo();
-                Team t = info.getTeam(teamName);
-                //by Tyler - added the last two pieces of info to the pop up window
-                text += "Team: " + teamName + " | Ranking: " + t.getRanking() + "\nMascot: " + t.getNickname() + "\nInfo: " + t.getInfo() + "\nAverage Offensive PPG: " + t.getOffensePPG() + "\nAverage Defensive PPG: "+ t.getDefensePPG();
-            } catch (IOException e) {//if for some reason TournamentInfo isnt working, it will display info not found
-                text += "Info for " + teamName + "not found";
-            }
-            //create a popup with the team info
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, text, ButtonType.CLOSE);
-            alert.setTitle("March Madness Bracket Simulator");
-            alert.setHeaderText(null);
-            alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-            alert.showAndWait();
-        }
     };
     /**
      * Handles mouseEntered events for BracketNode objects
@@ -145,15 +122,17 @@ public class BracketPane extends BorderPane {
      * TODO: Reduce. reuse, recycle!
      * Initializes the properties needed to construct a bracket.
      */
-    public BracketPane(Bracket currentBracket) {
+    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo) {
         displayedSubtree=0;
         this.currentBracket = currentBracket;
+        //CLEANUP(Josh): Import existing TournamentInfo instead of re-creating it from disk every time
+        this.teamInfo = teamInfo;
 
         bracketMap = new HashMap<>();
         nodeMap = new HashMap<>();
         panes = new HashMap<>();
         nodes = new ArrayList<>();
-        ArrayList<Root> roots = new ArrayList<>();
+        ArrayList<DivisionPane> divisionPanes = new ArrayList<>();
 
         center = new GridPane();
 
@@ -164,22 +143,20 @@ public class BracketPane extends BorderPane {
         buttons.add(customButton("SOUTH"));
         buttons.add(customButton("FULL"));
 
-        ArrayList<GridPane> gridPanes = new ArrayList<>();
-
         for (int m = 0; m < buttons.size() - 1; m++) {
-            roots.add(new Root(3 + m));
-            panes.put(buttons.get(m), roots.get(m));
+            divisionPanes.add(new DivisionPane(3 + m));
+            panes.put(buttons.get(m), divisionPanes.get(m));
         }
         Pane finalPane = createFinalFour();
         //buttons.add(customButton("FINAL"));
         //panes.put(buttons.get(5), finalPane);
         fullPane = new GridPane();
         GridPane gp1 = new GridPane();
-        gp1.add(roots.get(0), 0, 0);
-        gp1.add(roots.get(1), 0, 1);
+        gp1.add(divisionPanes.get(0), 0, 0);
+        gp1.add(divisionPanes.get(1), 0, 1);
         GridPane gp2 = new GridPane();
-        gp2.add(roots.get(2), 0, 0);
-        gp2.add(roots.get(3), 0, 1);
+        gp2.add(divisionPanes.get(2), 0, 0);
+        gp2.add(divisionPanes.get(3), 0, 1);
         gp2.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
 
         fullPane.add(gp1, 0, 0);
@@ -316,7 +293,7 @@ public class BracketPane extends BorderPane {
 
         for (int i = 0; i < xPos.length; i++) {
             String teamName = currentBracket.getBracket().get(i);
-            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 70, 0);
+            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 70, 0, false);
             finalPane.getChildren().add(nodeFinal);
             bracketMap.put(nodeFinal, i);
             nodeMap.put(i, nodeFinal);
@@ -334,17 +311,19 @@ public class BracketPane extends BorderPane {
      * Creates the graphical representation of a subtree.
      * Note, this is a vague model. TODO: MAKE MODULAR
      */
-    private class Root extends Pane {
+    //CLEANUP(Josh): Give a more clear name
+    private class DivisionPane extends Pane {
         //BUGFIX(Josh): Increase width to prevent longer team names from overflowing box
         //TODO: Calculate needed width based on longest team name, instead of hardcoding?
         private static final int NODE_WIDTH = 135;
+        private static final int INITIAL_MATCHES = 8;
         private static final int PADDING = 25;
         private int location;
 
-        public Root(int location) {
+        public DivisionPane(int location) {
             this.location = location;
             //CLEANUP(Josh): Use while loop, calculate parameters algorithmically instead of hardcoding
-            int matchCount = 8;
+            int matchCount = INITIAL_MATCHES;
             int startX = PADDING;
             int startY = PADDING;
             int yDiff = 25;
@@ -381,7 +360,7 @@ public class BracketPane extends BorderPane {
         private void createBracketColumn(int startX, int startY, int nodeWidth, int yDiff, int matchCount, int yIncrement) {
             int y = startY;
             if (matchCount == 0 && yIncrement == 0) {
-                BracketNode last = new BracketNode("", startX, y - 20, nodeWidth, 20);
+                BracketNode last = new BracketNode("", startX, y - 20, nodeWidth, 20, false);
                 nodes.add(last);
                 getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
                 last.setName(currentBracket.getBracket().get(location));
@@ -394,17 +373,16 @@ public class BracketPane extends BorderPane {
                     Point2D tr = new Point2D(startX + nodeWidth, y);
                     Point2D bl = new Point2D(startX, y + yDiff);
                     Point2D br = new Point2D(startX + nodeWidth, y + yDiff);
-                    BracketNode nTop = new BracketNode("", startX, y - 20, nodeWidth, 20);
+                    BracketNode nTop = new BracketNode("", startX, y - 20, nodeWidth, 20, matchCount == INITIAL_MATCHES);
                     aNodeList.add(nTop);
                     nodes.add(nTop);
-                    BracketNode nBottom = new BracketNode("", startX, y + (yDiff - 20), nodeWidth, 20);
+                    BracketNode nBottom = new BracketNode("", startX, y + (yDiff - 20), nodeWidth, 20, matchCount == INITIAL_MATCHES);
                     aNodeList.add(nBottom);
                     nodes.add(nBottom);
                     Line top = new Line(tl.getX(), tl.getY(), tr.getX(), tr.getY());
                     Line bottom = new Line(bl.getX(), bl.getY(), br.getX(), br.getY());
                     Line right = new Line(tr.getX(), tr.getY(), br.getX(), br.getY());
                     getChildren().addAll(top, bottom, right, nTop, nBottom);
-                    isTop = !isTop;
                     y += yIncrement;
                 }
                 ArrayList<Integer> tmpHelp = helper(location, matchCount);
@@ -426,7 +404,6 @@ public class BracketPane extends BorderPane {
     private class BracketNode extends HBox {
         private String teamName;
         private Label name;
-        private StackPane infoButton;
 
         /**
          * Creates a BracketNode with,
@@ -437,24 +414,56 @@ public class BracketPane extends BorderPane {
          * @param rX       The width of the rectangle to fill pane
          * @param rY       The height of the rectangle
          */
-        public BracketNode(String teamName, int x, int y, int rX, int rY) {
+        public BracketNode(String teamName, int x, int y, int rX, int rY, boolean isFirstMatch) {
             this.setLayoutX(x);
             this.setLayoutY(y);
             this.setPrefSize(rX, rY);
             this.setMaxSize(rX, rY);
+            this.setAlignment(Pos.CENTER_LEFT);
             this.teamName = teamName;
 
-            Circle buttonCircle = new Circle((double) rY / 2.0 - 2.0);
-            buttonCircle.setFill(Color.LIGHTBLUE);
-            Label buttonLabel = new Label("i");
-            infoButton = new StackPane(buttonCircle, buttonLabel);
-            infoButton.setVisible(!teamName.isEmpty());
+            //FEATURE(Josh): Replace right-click with info button for displaying team data
+            Node infoButton = createInfoButton(rY);
+            infoButton.setVisible(isFirstMatch);
+            getChildren().add(infoButton);
 
             name = new Label(teamName);
+            getChildren().addAll(name);
+        }
 
-            //setSpacing(rY / 2.0);
-            setAlignment(Pos.CENTER_LEFT);
-            getChildren().addAll(infoButton, name);
+        private Node createInfoButton(double nodeHeight) {
+            Circle buttonCircle = new Circle(nodeHeight / 2.0 - 2.0);
+            Label buttonLabel = new Label("i");
+            StackPane infoButton = new StackPane(buttonCircle, buttonLabel);
+
+            infoButton.getStyleClass().add("info-button");
+            buttonCircle.getStyleClass().add("circle");
+            infoButton.getStylesheets().add(getClass().getResource("infoButton.css").toString());
+
+            infoButton.setOnMouseClicked(event -> {
+                if (event.getButton() != MouseButton.PRIMARY) {
+                    return;
+                }
+                // Code moved from BracketPane.clicked
+                String text = "";
+                int treeNum = bracketMap.get(this);
+                String teamName = currentBracket.getBracket().get(treeNum);
+                Team t = teamInfo.getTeam(teamName);
+
+                //by Tyler - added the last two pieces of info to the pop up window
+                text += "Team: " + teamName + " | Ranking: " + t.getRanking() + "\nMascot: " + t.getNickname() +
+                    "\nInfo: " + t.getInfo() + "\nAverage Offensive PPG: " + t.getOffensePPG() + "\nAverage Defensive PPG: " + t.getDefensePPG();
+                //create a popup with the team info
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, text, ButtonType.CLOSE);
+                alert.setTitle("March Madness Bracket Simulator");
+                alert.setHeaderText(null);
+                alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+                alert.showAndWait();
+
+                // Prevent the MouseClicked event for the parent BracketNode from firing
+                event.consume();
+            });
+            return infoButton;
         }
 
         /**
@@ -470,7 +479,6 @@ public class BracketPane extends BorderPane {
         public void setName(String teamName) {
             this.teamName = teamName;
             name.setText(teamName);
-            infoButton.setVisible(!teamName.isEmpty());
         }
     }
 }
