@@ -1,22 +1,31 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import javafx.event.EventHandler;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by Richard and Ricardo on 5/3/17.
@@ -35,6 +44,10 @@ public class BracketPane extends BorderPane {
      * Reference to the current bracket.
      */
     private Bracket currentBracket;
+    /**
+     * Reference to the master bracket for simulation results (used for coloring predictions)
+     */
+    private Bracket comparisonBracket;
 
     //CLEANUP(Josh): Import existing TournamentInfo instead of re-creating it from disk every time
     private TournamentInfo teamInfo;
@@ -122,9 +135,11 @@ public class BracketPane extends BorderPane {
      * TODO: Reduce. reuse, recycle!
      * Initializes the properties needed to construct a bracket.
      */
-    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo) {
+    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket) {
+        System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
         displayedSubtree=0;
         this.currentBracket = currentBracket;
+        this.comparisonBracket = comparisonBracket;
         //CLEANUP(Josh): Import existing TournamentInfo instead of re-creating it from disk every time
         this.teamInfo = teamInfo;
 
@@ -144,7 +159,7 @@ public class BracketPane extends BorderPane {
         buttons.add(customButton("FULL"));
 
         for (int m = 0; m < buttons.size() - 1; m++) {
-            divisionPanes.add(new DivisionPane(3 + m));
+            divisionPanes.add(new DivisionPane(3 + m, comparisonBracket));
             panes.put(buttons.get(m), divisionPanes.get(m));
         }
         Pane finalPane = createFinalFour();
@@ -220,6 +235,33 @@ public class BracketPane extends BorderPane {
     }
 
     /**
+     * Checks if a prediction at the given index is correct
+     * @param index The bracket index to check
+     * @return true if prediction matches the simulated result, false otherwise
+     */
+    private boolean isPredictionCorrect(int index) {
+        if (comparisonBracket == null) return false;
+        String predicted = currentBracket.getBracket().get(index);
+        String actual = comparisonBracket.getBracket().get(index);
+        return !predicted.isEmpty() && predicted.equals(actual);
+    }
+
+    /**
+     * Returns the number of points awarded for a correct prediction at this bracket position
+     * @param index The bracket index
+     * @return points for correct prediction at this round
+     */
+    private int pointsForIndex(int index) {
+        if (index == 0) return 32;  // Finals
+        if (index < 3) return 16;   // Semifinals
+        if (index < 7) return 8;    // Quarterfinals
+        if (index < 15) return 4;   // Sweet 16
+        if (index < 31) return 2;   // Round of 32
+        if (index < 63) return 1;   // Round of 64
+        return 0;
+    }
+
+    /**
      * Sets the current bracket to,
      *
      * @param target The bracket to replace currentBracket
@@ -285,6 +327,7 @@ public class BracketPane extends BorderPane {
         return pane;
     }
 
+    // Pranshu worked on this: widen final four/championship nodes and preserve color feedback on these nodes
     public Pane createFinalFour() {
         Pane finalPane = new Pane();
         //CLEANUP(Josh): Use a loop
@@ -293,14 +336,21 @@ public class BracketPane extends BorderPane {
 
         for (int i = 0; i < xPos.length; i++) {
             String teamName = currentBracket.getBracket().get(i);
-            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 70, 0, false);
+            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 220, 30, false);
             finalPane.getChildren().add(nodeFinal);
             bracketMap.put(nodeFinal, i);
             nodeMap.put(i, nodeFinal);
+            
+            // Update display with scores and colors if comparison bracket exists
+            if (comparisonBracket != null) {
+                nodeFinal.setNameWithScore(teamName, i);
+            }
+            
             nodeFinal.setOnMouseClicked(clicked);
             nodeFinal.setOnMouseDragEntered(enter);
             nodeFinal.setOnMouseDragExited(exit);
-            nodeFinal.setStyle("-fx-border-color: darkblue");
+            String existingStyle = nodeFinal.getStyle();
+            nodeFinal.setStyle((existingStyle == null ? "" : existingStyle) + "-fx-border-color: darkblue;");
         }
         finalPane.setMinWidth(400.0);
 
@@ -315,13 +365,17 @@ public class BracketPane extends BorderPane {
     private class DivisionPane extends Pane {
         //BUGFIX(Josh): Increase width to prevent longer team names from overflowing box
         //TODO: Calculate needed width based on longest team name, instead of hardcoding?
-        private static final int NODE_WIDTH = 135;
+        // Pranshu worked on this: widen all bracket nodes so scores and actual winners fit better
+        private static final int NODE_WIDTH = 220;
         private static final int INITIAL_MATCHES = 8;
         private static final int PADDING = 25;
         private int location;
+        private Bracket comparisonBracketRef;
 
-        public DivisionPane(int location) {
+        public DivisionPane(int location, Bracket comparisonBracketRef) {
             this.location = location;
+            this.comparisonBracketRef = comparisonBracketRef;
+            System.out.println("DEBUG DivisionPane created - comparisonBracketRef is null: " + (comparisonBracketRef == null));
             //CLEANUP(Josh): Use while loop, calculate parameters algorithmically instead of hardcoding
             int matchCount = INITIAL_MATCHES;
             int startX = PADDING;
@@ -363,7 +417,12 @@ public class BracketPane extends BorderPane {
                 BracketNode last = new BracketNode("", startX, y - 20, nodeWidth, 20, false);
                 nodes.add(last);
                 getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
-                last.setName(currentBracket.getBracket().get(location));
+                String teamName = currentBracket.getBracket().get(location);
+                if (comparisonBracketRef != null) {
+                    last.setNameWithScore(teamName, location);
+                } else {
+                    last.setName(teamName);
+                }
                 bracketMap.put(last, location);
                 nodeMap.put(location, last);
             } else {
@@ -387,11 +446,15 @@ public class BracketPane extends BorderPane {
                 }
                 ArrayList<Integer> tmpHelp = helper(location, matchCount);
                 for (int j = 0; j < aNodeList.size(); j++) {
-                    //System.out.println(currentBracket.getBracket().get(tmpHelp.get(j)));
-                    aNodeList.get(j).setName(currentBracket.getBracket().get(tmpHelp.get(j)));
-                    bracketMap.put(aNodeList.get(j), tmpHelp.get(j));
-                    nodeMap.put(tmpHelp.get(j), aNodeList.get(j));
-                    //System.out.println(bracketMap.get(aNodeList.get(j)));
+                    int bracketIndex = tmpHelp.get(j);
+                    String teamName = currentBracket.getBracket().get(bracketIndex);
+                    if (comparisonBracketRef != null) {
+                        aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
+                    } else {
+                        aNodeList.get(j).setName(teamName);
+                    }
+                    bracketMap.put(aNodeList.get(j), bracketIndex);
+                    nodeMap.put(bracketIndex, aNodeList.get(j));
                 }
             }
 
@@ -414,12 +477,16 @@ public class BracketPane extends BorderPane {
          * @param rX       The width of the rectangle to fill pane
          * @param rY       The height of the rectangle
          */
+        // Pranshu worked on this: improve node label wrapping and tooltip support for long team labels
         public BracketNode(String teamName, int x, int y, int rX, int rY, boolean isFirstMatch) {
             this.setLayoutX(x);
             this.setLayoutY(y);
+            this.setMinSize(rX, rY);
             this.setPrefSize(rX, rY);
             this.setMaxSize(rX, rY);
             this.setAlignment(Pos.CENTER_LEFT);
+            this.setSpacing(6);
+            this.setPadding(new javafx.geometry.Insets(0, 5, 0, 5));
             this.teamName = teamName;
 
             //FEATURE(Josh): Replace right-click with info button for displaying team data
@@ -428,6 +495,12 @@ public class BracketPane extends BorderPane {
             getChildren().add(infoButton);
 
             name = new Label(teamName);
+            name.setStyle("-fx-background-color: transparent; -fx-text-fill: black;");
+            name.setWrapText(true);
+            name.setTextAlignment(TextAlignment.LEFT);
+            name.setPrefWidth(Math.max(rX - 50, 120));
+            name.setMaxWidth(Math.max(rX - 50, 120));
+            name.setTooltip(new Tooltip(teamName));
             getChildren().addAll(name);
         }
 
@@ -477,8 +550,48 @@ public class BracketPane extends BorderPane {
          * @param teamName The name to assign to the node.
          */
         public void setName(String teamName) {
+            System.out.println("DEBUG setName called (NOT setNameWithScore): " + teamName);
             this.teamName = teamName;
             name.setText(teamName);
+        }
+
+        /**
+         * Sets the name and updates display with score and prediction feedback
+         * @param teamName The team name
+         * @param bracketIndex The index in the bracket (used for coloring and scoring)
+         */
+        // Pranshu worked on this: show actual winner on wrong picks and add hover tooltip feedback
+        public void setNameWithScore(String teamName, int bracketIndex) {
+            this.teamName = teamName;
+            
+            System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
+            System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
+            
+            // DEBUG: Force text to show scores
+            int score = (comparisonBracket != null) ? comparisonBracket.getTeamScore(bracketIndex) : currentBracket.getTeamScore(bracketIndex);
+            String displayText = teamName + " (" + score + ")";
+            
+            System.out.println("  displayText=" + displayText);
+            
+            // Apply coloring only if there's a meaningful comparison
+            Tooltip tooltip = new Tooltip();
+            if (comparisonBracket != null && !teamName.isEmpty()) {
+                if (isPredictionCorrect(bracketIndex)) {
+                    // Correct prediction: green on the HBox background
+                    displayText += " +" + pointsForIndex(bracketIndex);
+                    this.setStyle("-fx-background-color: #90EE90; -fx-padding: 2;");
+                    tooltip.setText("Correct pick. +" + pointsForIndex(bracketIndex) + " points.");
+                } else if (!currentBracket.getBracket().get(bracketIndex).isEmpty()) {
+                    // Incorrect prediction: red on the HBox background
+                    String actualWinner = comparisonBracket.getBracket().get(bracketIndex);
+                    displayText += "\nActual: " + actualWinner;
+                    this.setStyle("-fx-background-color: #FFB6C6; -fx-padding: 2;");
+                    tooltip.setText("Your pick: " + teamName + "\nActual winner: " + actualWinner);
+                }
+            }
+            
+            name.setText(displayText);
+            Tooltip.install(this, tooltip);
         }
     }
 }
