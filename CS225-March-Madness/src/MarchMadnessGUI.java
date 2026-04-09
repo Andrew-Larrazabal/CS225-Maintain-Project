@@ -342,26 +342,26 @@ public class MarchMadnessGUI extends Application {
         );
         instructions.setWrappingWidth(400); // keeps it readable
 
-        loginPane.add(instructions, 0, 1, 2, 1);
+        loginPane.add(instructions, 1, 1,2,1);
 
         Label userName = new Label("User Name: ");
-        loginPane.add(userName, 0, 1);
+        loginPane.add(userName, 1, 2);
 
         TextField enterUser = new TextField();
-        loginPane.add(enterUser, 1, 1);
+        loginPane.add(enterUser, 2, 2);
 
         Label password = new Label("Password: ");
-        loginPane.add(password, 0, 2);
+        loginPane.add(password, 1, 3);
 
         PasswordField passwordField = new PasswordField();
-        loginPane.add(passwordField, 1, 2);
+        loginPane.add(passwordField, 2, 3);
 
         Button signButton = new Button("Sign in");
-        loginPane.add(signButton, 1, 4);
+        loginPane.add(signButton, 2, 5);
         signButton.setDefaultButton(true);//added by matt 5/7, lets you use sign in button by pressing enter
 
         Label message = new Label();
-        loginPane.add(message, 1, 5);
+        loginPane.add(message, 2, 6);
 
         signButton.setOnAction(event -> {
 
