@@ -460,9 +460,21 @@ public class BracketPane extends BorderPane {
                 /**
                  * @param teamName The name to assign to the node.
                  */
+
+                //Tristan added showign ranking next to names
                 public void setName(String teamName) {
                         this.teamName = teamName;
-                        name.setText(teamName);
+                        if (this.teamName.isBlank()) {
+                            name.setText(teamName);
+                        } else {
+                            try {
+                                TournamentInfo info = new TournamentInfo();
+                                Team t = info.getTeam(teamName);
+                                name.setText(teamName + " R:" + t.getRanking());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
                 }
         }
 }
