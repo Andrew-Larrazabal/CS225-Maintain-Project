@@ -336,7 +336,7 @@ public class BracketPane extends BorderPane {
 
         for (int i = 0; i < xPos.length; i++) {
             String teamName = currentBracket.getBracket().get(i);
-            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 220, 30, false);
+            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 200, 30, false);
             finalPane.getChildren().add(nodeFinal);
             bracketMap.put(nodeFinal, i);
             nodeMap.put(i, nodeFinal);
@@ -352,7 +352,7 @@ public class BracketPane extends BorderPane {
             String existingStyle = nodeFinal.getStyle();
             nodeFinal.setStyle((existingStyle == null ? "" : existingStyle) + "-fx-border-color: darkblue;");
         }
-        finalPane.setMinWidth(400.0);
+        finalPane.setMinWidth(Region.USE_COMPUTED_SIZE);
 
         return finalPane;
     }
@@ -364,9 +364,9 @@ public class BracketPane extends BorderPane {
     //CLEANUP(Josh): Give a more clear name
     private class DivisionPane extends Pane {
         //BUGFIX(Josh): Increase width to prevent longer team names from overflowing box
+        //Pranshu worked on this: widen bracket nodes to better fit long names
         //TODO: Calculate needed width based on longest team name, instead of hardcoding?
-        // Pranshu worked on this: widen all bracket nodes so scores and actual winners fit better
-        private static final int NODE_WIDTH = 220;
+        private static final int NODE_WIDTH = 200;
         private static final int INITIAL_MATCHES = 8;
         private static final int PADDING = 25;
         private int location;
@@ -567,31 +567,36 @@ public class BracketPane extends BorderPane {
             System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
             System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
             
-            // DEBUG: Force text to show scores
-            int score = (comparisonBracket != null) ? comparisonBracket.getTeamScore(bracketIndex) : currentBracket.getTeamScore(bracketIndex);
-            String displayText = teamName + " (" + score + ")";
-            
-            System.out.println("  displayText=" + displayText);
-            
-            // Apply coloring only if there's a meaningful comparison
-            Tooltip tooltip = new Tooltip();
-            if (comparisonBracket != null && !teamName.isEmpty()) {
-                if (isPredictionCorrect(bracketIndex)) {
-                    // Correct prediction: green on the HBox background
-                    displayText += " +" + pointsForIndex(bracketIndex);
-                    this.setStyle("-fx-background-color: #90EE90; -fx-padding: 2;");
-                    tooltip.setText("Correct pick. +" + pointsForIndex(bracketIndex) + " points.");
-                } else if (!currentBracket.getBracket().get(bracketIndex).isEmpty()) {
-                    // Incorrect prediction: red on the HBox background
-                    String actualWinner = comparisonBracket.getBracket().get(bracketIndex);
-                    displayText += "\nActual: " + actualWinner;
-                    this.setStyle("-fx-background-color: #FFB6C6; -fx-padding: 2;");
-                    tooltip.setText("Your pick: " + teamName + "\nActual winner: " + actualWinner);
+            // Only set display text if teamName is not empty
+            if (!teamName.isEmpty()) {
+                // DEBUG: Force text to show scores
+                int score = (comparisonBracket != null) ? comparisonBracket.getTeamScore(bracketIndex) : currentBracket.getTeamScore(bracketIndex);
+                String displayText = teamName + " (" + score + ")";
+                
+                System.out.println("  displayText=" + displayText);
+                
+                // Apply coloring only if there's a meaningful comparison
+                Tooltip tooltip = new Tooltip();
+                if (comparisonBracket != null) {
+                    if (isPredictionCorrect(bracketIndex)) {
+                        // Correct prediction: green on the HBox background
+                        displayText += " +" + pointsForIndex(bracketIndex);
+                        this.setStyle("-fx-background-color: #90EE90; -fx-padding: 2;");
+                        tooltip.setText("Correct pick. +" + pointsForIndex(bracketIndex) + " points.");
+                    } else if (!currentBracket.getBracket().get(bracketIndex).isEmpty()) {
+                        // Incorrect prediction: red on the HBox background
+                        this.setStyle("-fx-background-color: #FFB6C6; -fx-padding: 2;");
+                        tooltip.setText("Your pick: " + teamName);
+                    }
                 }
+                
+                name.setText(displayText);
+                Tooltip.install(this, tooltip);
+            } else {
+                name.setText("");
+                this.setStyle(null);
+                Tooltip.uninstall(this, null);
             }
-            
-            name.setText(displayText);
-            Tooltip.install(this, tooltip);
         }
     }
 }
