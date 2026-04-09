@@ -329,24 +329,39 @@ public class MarchMadnessGUI extends Application {
         Text welcomeMessage = new Text("March Madness Login Welcome");
         loginPane.add(welcomeMessage, 0, 0, 2, 1);
 
+        // Tristan add instructions
+        Text instructions = new Text(
+                "Instructions:\n" +
+                        "- Enter your username and password.\n" +
+                        "- If your username exists, you will log into your saved bracket.\n" +
+                        "- If not, a new account and bracket will be created.\n" +
+                        "- The program will only save if you have completely filled out everything.\n" +
+                        "- Complete your bracket and finalize it before simulation.\n" +
+                        "- Once ready then click the simulation button to view results.\n" +
+                        "- TIP: Right click / Hover over teams to see information"
+        );
+        instructions.setWrappingWidth(400); // keeps it readable
+
+        loginPane.add(instructions, 1, 1,2,1);
+
         Label userName = new Label("User Name: ");
-        loginPane.add(userName, 0, 1);
+        loginPane.add(userName, 1, 2);
 
         TextField enterUser = new TextField();
-        loginPane.add(enterUser, 1, 1);
+        loginPane.add(enterUser, 2, 2);
 
         Label password = new Label("Password: ");
-        loginPane.add(password, 0, 2);
+        loginPane.add(password, 1, 3);
 
         PasswordField passwordField = new PasswordField();
-        loginPane.add(passwordField, 1, 2);
+        loginPane.add(passwordField, 2, 3);
 
         Button signButton = new Button("Sign in");
-        loginPane.add(signButton, 1, 4);
+        loginPane.add(signButton, 2, 5);
         signButton.setDefaultButton(true);//added by matt 5/7, lets you use sign in button by pressing enter
 
         Label message = new Label();
-        loginPane.add(message, 1, 5);
+        loginPane.add(message, 2, 6);
 
         signButton.setOnAction(event -> {
 
@@ -355,10 +370,11 @@ public class MarchMadnessGUI extends Application {
             // the password user enter
             String playerPass = passwordField.getText();
 
-        
-          
-            
-            if (playerMap.get(name) != null) {
+
+            //Tristan added not allowed to enter empty or blank field boxes
+            if (name.isBlank() || playerPass.isBlank()) {
+                infoAlert("You cannot enter an empty name or password!");
+            } else if (playerMap.get(name) != null) {
                 //check password of user
                  
                 Bracket tmpBracket = this.playerMap.get(name);
