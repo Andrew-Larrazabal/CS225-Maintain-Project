@@ -521,7 +521,8 @@ public class MarchMadnessGUI extends Application {
      * @return deserialized bracket
      */
     private ArrayList<Bracket> loadBrackets()
-    {   
+    {
+        /* old code which caused nullpointerexception
         ArrayList<Bracket> list=new ArrayList<Bracket>();
         File dir = new File(".");
         for (final File fileEntry : dir.listFiles()){
@@ -532,6 +533,37 @@ public class MarchMadnessGUI extends Application {
                 list.add(deseralizeBracket(fileName));
             }
         }
+        return list;
+
+         */
+
+        // Edit by: Jasper Carr
+        ArrayList<Bracket> list = new ArrayList<>();
+        File dir = new File(".");
+
+        // Check if directory is valid
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Directory not found: " + dir.getAbsolutePath());
+            return list;
+        }
+
+        File[] files = dir.listFiles();
+
+        // Prevent NullPointerException
+        if (files == null) {
+            System.out.println("Could not read files in directory.");
+            return list;
+        }
+
+        for (final File fileEntry : files) {
+            String fileName = fileEntry.getName();
+
+            // extension check
+            if (fileName.endsWith(".ser")) {
+                list.add(deseralizeBracket(fileName));
+            }
+        }
+
         return list;
     }
        
