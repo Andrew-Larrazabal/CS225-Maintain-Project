@@ -17,6 +17,7 @@ import javafx.scene.text.TextAlignment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Richard and Ricardo on 5/3/17.
@@ -235,6 +236,20 @@ public class BracketPane extends BorderPane {
      */
     public void clearSubtree(int position) {
         currentBracket.resetSubtree(position);
+        // FEATURE(Cesar): Clear only the displayed division without returning to division selector.
+        ArrayList<Integer> affectedIndices = new ArrayList<>();
+
+        affectedIndices.add(position);
+        affectedIndices.addAll(helper(position, 8));
+        affectedIndices.addAll(helper(position, 4));
+        affectedIndices.addAll(helper(position, 2));
+        affectedIndices.addAll(helper(position, 1));
+
+        for (int index : affectedIndices) {
+            if (nodeMap.containsKey(index)) {
+                nodeMap.get(index).setName(currentBracket.getBracket().get(index));
+            }
+        }
     }
 
     /**
