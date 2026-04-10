@@ -179,7 +179,7 @@ public class MarchMadnessGUI extends Application {
     // Pranshu worked on this: render player's bracket with sim results comparison so feedback colors appear
     private void viewBracket(){
        // Show player's bracket (selectedBracket) with simulation results for comparison feedback
-       bracketPane=new BracketPane(selectedBracket, teamInfo, simulationHasOccurred ? simResultBracket : null);
+       bracketPane=new BracketPane(selectedBracket, teamInfo, simulationHasOccurred ? simResultBracket : null, clearButton);
        GridPane full = bracketPane.getFullPane();
        full.setAlignment(Pos.CENTER);
        full.setDisable(true);
@@ -196,7 +196,7 @@ public class MarchMadnessGUI extends Application {
         btoolBar.setDisable(false);
         Bracket comparison = simulationHasOccurred ? simResultBracket : null;
         System.out.println("DEBUG chooseBracket called - simulationHasOccurred=" + simulationHasOccurred + ", comparison is null: " + (comparison == null));
-        bracketPane=new BracketPane(selectedBracket, teamInfo, comparison);
+        bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
         displayPane(bracketPane);
 
     }
@@ -208,7 +208,7 @@ public class MarchMadnessGUI extends Application {
     private void clear(){
       bracketPane.clear();
       Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-      bracketPane=new BracketPane(selectedBracket, teamInfo, comparison);
+      bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
       displayPane(bracketPane);
         
     }
@@ -222,7 +222,7 @@ public class MarchMadnessGUI extends Application {
             //horrible hack to reset
             selectedBracket=new Bracket(startingBracket);
             Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison);
+            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
             displayPane(bracketPane);
         }
     }
@@ -306,7 +306,7 @@ public class MarchMadnessGUI extends Application {
         finalizeButton.setOnAction(e->finalizeBracket());
         back.setOnAction(e->{
             Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison);
+            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
             displayPane(bracketPane);
         });
     }

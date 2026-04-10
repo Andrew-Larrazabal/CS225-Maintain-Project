@@ -7,6 +7,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -131,12 +132,15 @@ public class BracketPane extends BorderPane {
     private GridPane fullPane;
 
 
+    private Button clearButton;
+
     /**
      * TODO: Reduce. reuse, recycle!
      * Initializes the properties needed to construct a bracket.
      */
-    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket) {
+    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton) {
         System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
+        this.clearButton = clearButton;
         displayedSubtree=0;
         this.currentBracket = currentBracket;
         this.comparisonBracket = comparisonBracket;
@@ -209,7 +213,13 @@ public class BracketPane extends BorderPane {
                 center.setAlignment(Pos.CENTER);
                 setCenter(center);
                 //Grant 5/7 this is for clearing the tree it kind of works
-                displayedSubtree=buttons.indexOf(t)==7?0:buttons.indexOf(t)+3;
+                int index = buttons.indexOf(t);
+                if (index == 4) { // FULL
+                    displayedSubtree = 0;
+                } else {
+                    displayedSubtree = index + 3;
+                }
+                clearButton.setDisable(displayedSubtree == 0);
             });
         }
 
@@ -284,6 +294,13 @@ public class BracketPane extends BorderPane {
      */
     public void resetBracket() {
         currentBracket.resetSubtree(0);
+    }
+
+    /**
+     * Checks if currently viewing the full bracket
+     */
+    public boolean isFullView() {
+        return displayedSubtree == 0;
     }
 
     /**
