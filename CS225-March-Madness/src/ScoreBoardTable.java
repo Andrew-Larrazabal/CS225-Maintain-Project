@@ -108,7 +108,13 @@ public class ScoreBoardTable {
 
     //Ying's code, method clears the players from the Bracket
     public void clearPlayers() {
+        /*
         scores = new HashMap<Bracket, Integer>();
         data = FXCollections.observableArrayList();
+         */
+        // Edited by: Jasper Carr
+        scores.clear();
+        data.clear();
+        table.refresh();
     }
 }

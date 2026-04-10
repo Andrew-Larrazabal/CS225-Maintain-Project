@@ -132,18 +132,38 @@ public class MarchMadnessGUI extends Application {
      * after the simulation no more users can login
      */
     private void simulate(){
-        //cant login and restart prog after simulate
+        // Edited by: Jasper Carr
+        if (selectedBracket == null) {
+            infoAlert("Please log in and finalize a bracket first.");
+            return;
+        }
+
+        // lock simulation buttons but allow reset
         login.setDisable(true);
         simulate.setDisable(true);
-        
-       scoreBoardButton.setDisable(false);
-       viewBracketButton.setDisable(false);
-       
-       teamInfo.simulate(simResultBracket);
-       for(Bracket b:playerBrackets){
-           scoreBoard.addPlayer(b,b.scoreBracket(simResultBracket));
-       }
-        
+
+        scoreBoardButton.setDisable(false);
+        viewBracketButton.setDisable(false);
+
+        // after simulation, let Reset be used to start over
+        btoolBar.setDisable(false);
+        clearButton.setDisable(true);
+        finalizeButton.setDisable(true);
+        back.setDisable(true);
+        resetButton.setDisable(false);
+
+        // create a new simulated bracket every time
+        simResultBracket = new Bracket(startingBracket);
+        teamInfo.simulate(simResultBracket);
+
+        // clear old scoreboard results before re-adding
+        scoreBoard.clearPlayers();
+
+        for (Bracket b : playerBrackets) {
+            scoreBoard.addPlayer(b, b.scoreBracket(simResultBracket));
+        }
+
+        table.refresh();
         displayPane(table);
     }
     
@@ -173,12 +193,29 @@ public class MarchMadnessGUI extends Application {
       * 
       */
     private void viewBracket(){
-       selectedBracket=simResultBracket;
-       bracketPane=new BracketPane(selectedBracket, teamInfo);
-       GridPane full = bracketPane.getFullPane();
-       full.setAlignment(Pos.CENTER);
-       full.setDisable(true);
-       displayPane(new ScrollPane(full)); 
+        /*
+        BracketPane simPane = new BracketPane(simResultBracket, teamInfo);
+        GridPane full = simPane.getFullPane();
+        full.setAlignment(Pos.CENTER);
+        full.setDisable(true);
+        displayPane(new ScrollPane(full));
+         */
+
+        // Edited by: Jasper Carr
+        // Create a new BracketPane using the simulated results
+        BracketPane simPane = new BracketPane(simResultBracket, teamInfo);
+
+        // Get the full visual layout of the bracket
+        GridPane full = simPane.getFullPane();
+
+        // Center the bracket on the screen for better UI presentation
+        full.setAlignment(Pos.CENTER);
+
+        // Disable the pane so results cannot be modified
+        full.setDisable(true);
+
+        // Wrap the bracket in a ScrollPane so large brackets can be viewed properly
+        displayPane(new ScrollPane(full));
     }
     
     /**
@@ -204,35 +241,90 @@ public class MarchMadnessGUI extends Application {
       displayPane(bracketPane);
         
     }
+
+    /**
+     * Replaces the currently selected bracket with a new one.
+     * This is used when resetting a bracket so that:
+     * 1. The user's bracket is updated in the main list
+     * 2. The map (username → bracket) stays consistent
+     * 3. The selectedBracket reference points to the new bracket
+     * Added by: Jasper Carr
+     */
+    private void replaceSelectedBracket(Bracket newBracket) {
+
+        // Find the position of the current selected bracket in the list
+        int index = playerBrackets.indexOf(selectedBracket);
+
+        // If the bracket exists in the list, replace it with the new one
+        if (index >= 0) {
+            playerBrackets.set(index, newBracket);
+        }
+
+        // Update the player map so the username now points to the new bracket
+        playerMap.put(newBracket.getPlayerName(), newBracket);
+
+        // Update the reference to the currently selected bracket
+        selectedBracket = newBracket;
+    }
     
     /**
      * resets entire bracket
      */
     private void reset(){
-        if(confirmReset()){
-            //horrible hack to reset
-            selectedBracket=new Bracket(startingBracket);
-            bracketPane=new BracketPane(selectedBracket, teamInfo);
+        // Edited by: Jasper Carr
+        if (selectedBracket == null) {
+            return;
+        }
+
+        if (confirmReset()) {
+            // preserve the user's account info
+            Bracket freshBracket = new Bracket(startingBracket, selectedBracket.getPlayerName());
+            freshBracket.setPassword(selectedBracket.getPassword());
+
+            replaceSelectedBracket(freshBracket);
+
+            // overwrite saved file so reopening the program shows the reset bracket
+            seralizeBracket(freshBracket);
+
+            // clear old simulation + scoreboard
+            simResultBracket = new Bracket(startingBracket);
+            scoreBoard.clearPlayers();
+            table.refresh();
+
+            // restore editing state
+            btoolBar.setDisable(false);
+            clearButton.setDisable(false);
+            resetButton.setDisable(false);
+            finalizeButton.setDisable(false);
+            back.setDisable(false);
+
+            simulate.setDisable(true);
+            scoreBoardButton.setDisable(true);
+            viewBracketButton.setDisable(true);
+            login.setDisable(false);
+
+            bracketPane = new BracketPane(selectedBracket, teamInfo);
             displayPane(bracketPane);
         }
     }
     
     private void finalizeBracket(){
-       if(bracketPane.isComplete()){
-           btoolBar.setDisable(true);
-           bracketPane.setDisable(true);
-           simulate.setDisable(false);
-           login.setDisable(false);
-           //save the bracket along with account info
-           seralizeBracket(selectedBracket);
-            
-       }else{
+        // Edited by: Jasper Carr
+        if (bracketPane.isComplete()) {
+            bracketPane.setFinalized(true);
+            bracketPane.setDisable(true);
+
+            // keep bottom toolbar disabled until simulation finishes
+            btoolBar.setDisable(true);
+
+            simulate.setDisable(false);
+            login.setDisable(false);
+
+            seralizeBracket(selectedBracket);
+        } else {
             infoAlert("You can only finalize a bracket once it has been completed.");
-            //go back to bracket section selection screen
-            // bracketPane=new BracketPane(selectedBracket);
             displayPane(bracketPane);
-        
-       }
+        }
        //bracketPane=new BracketPane(selectedBracket);
       
       
@@ -537,7 +629,7 @@ public class MarchMadnessGUI extends Application {
 
          */
 
-        // Edit by: Jasper Carr
+        // Edited by: Jasper Carr
         ArrayList<Bracket> list = new ArrayList<>();
         File dir = new File(".");
 
