@@ -120,7 +120,7 @@ public class MarchMadnessGUI extends Application {
         // Saves bracket when window is closed
         primaryStage.setOnCloseRequest(e -> {
         if (selectedBracket != null) {
-            serializeBracket(selectedBracket);
+            seralizeBracket(selectedBracket);
         }
     });
 
@@ -171,7 +171,7 @@ public class MarchMadnessGUI extends Application {
         // Luke
         // Saves bracket progess before returning to login screen, even if incomplete
         if (selectedBracket != null && !bracketPane.isComplete()) {
-            serializeBracket(selectedBracket);
+            seralizeBracket(selectedBracket);
         }
         login.setDisable(true);
         simulate.setDisable(true);
@@ -253,7 +253,7 @@ public class MarchMadnessGUI extends Application {
         // Luke
         // Code changed to save bracket even if it is incomplete
         // Still prevents user from simulating with incomplete bracket
-        serializeBracket(selectedBracket);
+        seralizeBracket(selectedBracket);
         
        if(bracketPane.isComplete()){
            btoolBar.setDisable(true);
