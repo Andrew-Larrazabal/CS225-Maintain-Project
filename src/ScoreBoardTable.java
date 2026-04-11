@@ -89,6 +89,7 @@ public class ScoreBoardTable {
 
     //Ying's code, method addPlayer adds a player to the Bracket
     public void addPlayer(Bracket name, int score) {
+        /*
         try {
             if (scores == null) {
                 scores = new HashMap<Bracket, Integer>();
@@ -104,11 +105,39 @@ public class ScoreBoardTable {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+         */
+        // Adds a player score to the scoreboard.
+        // If the player is already present, only the score is updated.
+        // Edited by: Jasper Carr
+        try {
+            if (scores == null) {
+                scores = new HashMap<>();
+            }
+
+            if (scores.containsKey(name)) {
+                scores.put(name, score);
+            } else if (scores.size() < MAX_PLAYER_NUMBER) {
+                scores.put(name, score);
+                data.add(name);
+            }
+
+            table.sort();
+            table.refresh();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     //Ying's code, method clears the players from the Bracket
     public void clearPlayers() {
+        /*
         scores = new HashMap<Bracket, Integer>();
         data = FXCollections.observableArrayList();
+         */
+        // Clears the scoreboard and resets the table's backing data.
+        // Edited by: Jasper Carr
+        scores = new HashMap<>();
+        data.clear();
+        table.refresh();
     }
 }
