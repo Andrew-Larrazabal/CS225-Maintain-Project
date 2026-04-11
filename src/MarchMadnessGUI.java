@@ -75,6 +75,8 @@ public class MarchMadnessGUI extends Application {
     private BracketPane bracketPane;
     private GridPane loginP;
     private TournamentInfo teamInfo;
+
+    private ProgressMeter progressMeter; // Bandana: progess meter showing the completness of your bracket
     
     
     @Override
@@ -102,10 +104,12 @@ public class MarchMadnessGUI extends Application {
         table=scoreBoard.start();
         loginP=createLogin();
         CreateToolBars();
+        progressMeter = new ProgressMeter(); // bandana :initialize progress meter for tracking bracket completion
         
         //display login screen
         login();
         
+
         setActions();
         root.setTop(toolBar);   
         root.setBottom(btoolBar);
@@ -198,6 +202,7 @@ public class MarchMadnessGUI extends Application {
         System.out.println("DEBUG chooseBracket called - simulationHasOccurred=" + simulationHasOccurred + ", comparison is null: " + (comparison == null));
         bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
         displayPane(bracketPane);
+        progressMeter.update(selectedBracket); //Bandana : updates progress meter when the user is filling the bracket
 
     }
     /**
@@ -207,13 +212,11 @@ public class MarchMadnessGUI extends Application {
     // Pranshu worked on this: rebuild cleared bracket with sim comparison if available
     private void clear(){
       bracketPane.clear();
-<<<<<<< HEAD:CS225-March-Madness/src/MarchMadnessGUI.java
-=======
       Bracket comparison = simulationHasOccurred ? simResultBracket : null;
       bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
       displayPane(bracketPane);
+      progressMeter.update(selectedBracket); //bandana: update the progress meter to reflect cleared picks.
         
->>>>>>> Pranshu:src/MarchMadnessGUI.java
     }
     
     /**
@@ -227,6 +230,7 @@ public class MarchMadnessGUI extends Application {
             Bracket comparison = simulationHasOccurred ? simResultBracket : null;
             bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
             displayPane(bracketPane);
+            progressMeter.reset(); // bandana : resets the progressmeter when bracket is reset.
         }
     }
     
@@ -292,8 +296,11 @@ public class MarchMadnessGUI extends Application {
                 resetButton,
                 finalizeButton,
                 back=new Button("Choose Division"),
+                progressMeter, //bandana : Display progres meter.
                 createSpacer()
+                
         );
+
     }
     
    /**

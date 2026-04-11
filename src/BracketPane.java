@@ -28,13 +28,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-<<<<<<< HEAD:CS225-March-Madness/src/BracketPane.java
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-=======
->>>>>>> Pranshu:src/BracketPane.java
 /**
  * Created by Richard and Ricardo on 5/3/17.
  */
