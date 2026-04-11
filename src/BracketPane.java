@@ -377,7 +377,7 @@ public class BracketPane extends BorderPane {
             
             // Update display with scores and colors if comparison bracket exists
             if (comparisonBracket != null) {
-               // nodeFinal.setNameWithScore(teamName, i);
+                nodeFinal.setNameWithScore(teamName, i);
             }
             
             nodeFinal.setOnMouseClicked(clicked);
@@ -453,7 +453,7 @@ public class BracketPane extends BorderPane {
                 getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
                 String teamName = currentBracket.getBracket().get(location);
                 if (comparisonBracketRef != null) {
-                    //last.setNameWithScore(teamName, location);
+                    last.setNameWithScore(teamName, location);
                 } else {
                     last.setName(teamName);
                 }
@@ -483,7 +483,7 @@ public class BracketPane extends BorderPane {
                     int bracketIndex = tmpHelp.get(j);
                     String teamName = currentBracket.getBracket().get(bracketIndex);
                     if (comparisonBracketRef != null) {
-                      //  aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
+                       aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
                     } else {
                         aNodeList.get(j).setName(teamName);
                     }
@@ -602,7 +602,7 @@ public class BracketPane extends BorderPane {
          */
         // Pranshu worked on this: show actual winner on wrong picks and add hover tooltip feedback
         public void setNameWithScore(String teamName, int bracketIndex) {
-          //  this.teamName = teamName;
+           this.teamName = teamName;
             
             System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
             System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
@@ -630,10 +630,10 @@ public class BracketPane extends BorderPane {
                     }
                 }
                 
-               // name.setText(displayText);
+               name.setText(displayText);
                 Tooltip.install(this, tooltip);
             } else {
-              //  name.setText("");
+               name.setText("");
                 this.setStyle(null);
                 Tooltip.uninstall(this, null);
             }
