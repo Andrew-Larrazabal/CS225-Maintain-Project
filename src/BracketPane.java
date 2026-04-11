@@ -28,10 +28,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by Richard and Ricardo on 5/3/17.
  */
@@ -87,6 +83,7 @@ public class BracketPane extends BorderPane {
         }
     }
 
+    private ProgressMeter progressMeter; // Bandana: reference to progress meter so picks can update it
 
     public void clear(){
         clearSubtree(displayedSubtree);
@@ -106,6 +103,7 @@ public class BracketPane extends BorderPane {
                 clearAbove(treeNum);
                 nodeMap.get((bracketMap.get(n) - 1) / 2).setName(n.getName());
                 currentBracket.moveTeamUp(treeNum);
+            if (progressMeter != null) progressMeter.update(currentBracket); //bandana: update the meter when the pick is made
             }
         }
     };
@@ -142,7 +140,7 @@ public class BracketPane extends BorderPane {
      * TODO: Reduce. reuse, recycle!
      * Initializes the properties needed to construct a bracket.
      */
-    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton) {
+    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton, ProgressMeter progressMeter) {
         System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
         this.clearButton = clearButton;
         displayedSubtree=0;
@@ -150,6 +148,7 @@ public class BracketPane extends BorderPane {
         this.comparisonBracket = comparisonBracket;
         //CLEANUP(Josh): Import existing TournamentInfo instead of re-creating it from disk every time
         this.teamInfo = teamInfo;
+        this.progressMeter = progressMeter; //bandana :constructor
 
         bracketMap = new HashMap<>();
         nodeMap = new HashMap<>();
@@ -378,7 +377,7 @@ public class BracketPane extends BorderPane {
             
             // Update display with scores and colors if comparison bracket exists
             if (comparisonBracket != null) {
-                nodeFinal.setNameWithScore(teamName, i);
+               // nodeFinal.setNameWithScore(teamName, i);
             }
             
             nodeFinal.setOnMouseClicked(clicked);
@@ -454,7 +453,7 @@ public class BracketPane extends BorderPane {
                 getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
                 String teamName = currentBracket.getBracket().get(location);
                 if (comparisonBracketRef != null) {
-                    last.setNameWithScore(teamName, location);
+                    //last.setNameWithScore(teamName, location);
                 } else {
                     last.setName(teamName);
                 }
@@ -484,7 +483,7 @@ public class BracketPane extends BorderPane {
                     int bracketIndex = tmpHelp.get(j);
                     String teamName = currentBracket.getBracket().get(bracketIndex);
                     if (comparisonBracketRef != null) {
-                        aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
+                      //  aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
                     } else {
                         aNodeList.get(j).setName(teamName);
                     }
@@ -603,7 +602,7 @@ public class BracketPane extends BorderPane {
          */
         // Pranshu worked on this: show actual winner on wrong picks and add hover tooltip feedback
         public void setNameWithScore(String teamName, int bracketIndex) {
-            this.teamName = teamName;
+          //  this.teamName = teamName;
             
             System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
             System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
@@ -631,13 +630,13 @@ public class BracketPane extends BorderPane {
                     }
                 }
                 
-                name.setText(displayText);
+               // name.setText(displayText);
                 Tooltip.install(this, tooltip);
             } else {
-                name.setText("");
+              //  name.setText("");
                 this.setStyle(null);
                 Tooltip.uninstall(this, null);
             }
         }
     }
-}
+
