@@ -137,21 +137,27 @@ public class MarchMadnessGUI extends Application {
      */
     // Pranshu worked on this: enable scoreboard/view bracket after simulation and keep sim results for feedback
     private void simulate(){
-        //cant login and restart prog after simulate
+        // Edited by: Jasper Carr
         login.setDisable(true);
         simulate.setDisable(true);
-        
-       scoreBoardButton.setDisable(false);
-       viewBracketButton.setDisable(false);
-       
-       teamInfo.simulate(simResultBracket);
-       for(Bracket b:playerBrackets){
-           scoreBoard.addPlayer(b,b.scoreBracket(simResultBracket));
-       }
-       
-       simulationHasOccurred = true;
-       System.out.println("DEBUG ========== SIMULATION COMPLETE - simulationHasOccurred = true ==========");
-        
+
+        scoreBoardButton.setDisable(false);
+        viewBracketButton.setDisable(false);
+
+        // Re-enable the bottom toolbar after simulation so Reset / Clear / Back work again
+        btoolBar.setDisable(false);
+
+        // Start from a fresh copy every time the tournament is simulated
+        simResultBracket = new Bracket(startingBracket);
+        teamInfo.simulate(simResultBracket);
+
+        // Recalculate scores for the current run only
+        scoreBoard.clearPlayers();
+        for (Bracket b : playerBrackets) {
+            scoreBoard.addPlayer(b, b.scoreBracket(simResultBracket));
+        }
+
+        simulationHasOccurred = true;
         displayPane(table);
     }
     
@@ -217,6 +223,25 @@ public class MarchMadnessGUI extends Application {
         displayPane(bracketPane);
         progressMeter.update(selectedBracket);// Bandana: updates progress meter when the user is filling the bracket
     }
+
+    /**
+     * Replaces the currently selected player's bracket everywhere it is stored.
+     * This keeps selectedBracket, playerBrackets, and playerMap all synchronized.
+     *
+     * @param newBracket the new bracket that should replace the current one
+     * Added by Jasper Carr
+     */
+    private void replaceSelectedBracket(Bracket newBracket) {
+        int index = playerBrackets.indexOf(selectedBracket);
+
+        if (index >= 0) {
+            playerBrackets.set(index, newBracket);
+        }
+
+        playerMap.put(newBracket.getPlayerName(), newBracket);
+        selectedBracket = newBracket;
+    }
+
     /**
      * resets current selected sub tree
      * for final4 reset Ro2 and winner
@@ -238,36 +263,46 @@ public class MarchMadnessGUI extends Application {
      */
     // Pranshu worked on this: preserve simulated comparison when resetting the bracket view
     private void reset(){
-        if(confirmReset()){
-            //horrible hack to reset
-            selectedBracket=new Bracket(startingBracket);
+        if (confirmReset()) {
+            // Edited by: Jasper Carr
+            // Make a fresh bracket for the same player
+            Bracket freshBracket = new Bracket(startingBracket, selectedBracket.getPlayerName());
+            freshBracket.setPassword(selectedBracket.getPassword());
+
+            // Keep all references synchronized
+            replaceSelectedBracket(freshBracket);
+
+            // Save the reset bracket immediately
+            seralizeBracket(selectedBracket);
+
+            // Rebuild the bracket view
             Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
+            bracketPane = new BracketPane(selectedBracket, teamInfo, comparison, clearButton, progressMeter);
             displayPane(bracketPane);
             progressMeter.reset(); // bandana : resets the progressmeter when bracket is reset.
         }
+
     }
     
     private void finalizeBracket(){
-       if(bracketPane.isComplete()){
-           btoolBar.setDisable(true);
-           bracketPane.setDisable(true);
-           simulate.setDisable(false);
-           login.setDisable(false);
-           //save the bracket along with account info
-           seralizeBracket(selectedBracket);
-            
-       }else{
-            infoAlert("You can only finalize a bracket once it has been completed.");
+        // Edited by: Jasper Carr
+        if (bracketPane.isComplete()) {
+            bracketPane.setFinalized(true);
+            bracketPane.setDisable(true);
+
+            // keep bottom toolbar disabled until simulation finishes
+            btoolBar.setDisable(true);
+
+            simulate.setDisable(false);
+            login.setDisable(false);
+
+            seralizeBracket(selectedBracket);
             //go back to bracket section selection screen
             // bracketPane=new BracketPane(selectedBracket);
             displayPane(bracketPane);
         
        }
        //bracketPane=new BracketPane(selectedBracket);
-      
-      
-        
     }
     
     
@@ -557,16 +592,43 @@ public class MarchMadnessGUI extends Application {
      */
     private ArrayList<Bracket> loadBrackets()
     {   
+         /* old code which caused nullpointerexception
         ArrayList<Bracket> list=new ArrayList<Bracket>();
         File dir = new File(".");
         for (final File fileEntry : dir.listFiles()){
+	@@ -533,6 +626,37 @@ private ArrayList<Bracket> loadBrackets()
+            }
+        }
+        return list;
+         */
+
+        // Edited by: Jasper Carr
+        ArrayList<Bracket> list = new ArrayList<>();
+        File dir = new File(".");
+
+        // Check if directory is valid
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Directory not found: " + dir.getAbsolutePath());
+            return list;
+        }
+
+        File[] files = dir.listFiles();
+
+        // Prevent NullPointerException
+        if (files == null) {
+            System.out.println("Could not read files in directory.");
+            return list;
+        }
+
+        for (final File fileEntry : files) {
             String fileName = fileEntry.getName();
-            String extension = fileName.substring(fileName.lastIndexOf(".")+1);
-       
-            if (extension.equals("ser")){
+
+            // extension check
+            if (fileName.endsWith(".ser")) {
                 list.add(deseralizeBracket(fileName));
             }
         }
+
         return list;
     }
        
