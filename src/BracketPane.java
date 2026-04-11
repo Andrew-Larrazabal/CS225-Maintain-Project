@@ -86,7 +86,7 @@ public class BracketPane extends BorderPane {
 
     private ProgressMeter progressMeter; // Bandana: reference to progress meter so picks can update it
 
-    public void clear(){
+    public void clear() {
         clearSubtree(displayedSubtree);
     }
 
@@ -104,7 +104,8 @@ public class BracketPane extends BorderPane {
                 clearAbove(treeNum);
                 nodeMap.get((bracketMap.get(n) - 1) / 2).setName(n.getName());
                 currentBracket.moveTeamUp(treeNum);
-            if (progressMeter != null) progressMeter.update(currentBracket); //bandana: update the meter when the pick is made
+                if (progressMeter != null)
+                    progressMeter.update(currentBracket); //bandana: update the meter when the pick is made
             }
         }
     };
@@ -144,7 +145,7 @@ public class BracketPane extends BorderPane {
     public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton, ProgressMeter progressMeter) {
         // System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
         this.clearButton = clearButton;
-        displayedSubtree=0;
+        displayedSubtree = 0;
         this.currentBracket = currentBracket;
         this.comparisonBracket = comparisonBracket;
         //CLEANUP(Josh): Import existing TournamentInfo instead of re-creating it from disk every time
@@ -250,6 +251,7 @@ public class BracketPane extends BorderPane {
 
     /**
      * Checks if a prediction at the given index is correct
+     *
      * @param index The bracket index to check
      * @return true if prediction matches the simulated result, false otherwise
      */
@@ -262,6 +264,7 @@ public class BracketPane extends BorderPane {
 
     /**
      * Returns the number of points awarded for a correct prediction at this bracket position
+     *
      * @param index The bracket index
      * @return points for correct prediction at this round
      */
@@ -375,12 +378,12 @@ public class BracketPane extends BorderPane {
             finalPane.getChildren().add(nodeFinal);
             bracketMap.put(nodeFinal, i);
             nodeMap.put(i, nodeFinal);
-            
+
             // Update display with scores and colors if comparison bracket exists
             if (comparisonBracket != null) {
                 nodeFinal.setNameWithScore(teamName, i);
             }
-            
+
             nodeFinal.setOnMouseClicked(clicked);
             nodeFinal.setOnMouseDragEntered(enter);
             nodeFinal.setOnMouseDragExited(exit);
@@ -435,16 +438,18 @@ public class BracketPane extends BorderPane {
         }
 
         //CLEANUP(Josh): Gave method & parameters more descriptive names, added @params to Javadoc
+
         /**
          * The secret sauce... well not really,
          * Creates 3 lines in appropriate location unless it is the last line.
          * Adds these lines and "BracketNodes" to the Pane of this inner class
-         * @param startX        Initial x position of first BracketNode
-         * @param startY        Initial y position of first BracketNode
-         * @param nodeWidth     Width of each BracketNode
-         * @param yDiff         Spacing between pairs of BracketNodes in a match
-         * @param matchCount    Amount of matches in this column (0 to create single BracketNode)
-         * @param yIncrement    Spacing between each match (0 to create single BracketNode)
+         *
+         * @param startX     Initial x position of first BracketNode
+         * @param startY     Initial y position of first BracketNode
+         * @param nodeWidth  Width of each BracketNode
+         * @param yDiff      Spacing between pairs of BracketNodes in a match
+         * @param matchCount Amount of matches in this column (0 to create single BracketNode)
+         * @param yIncrement Spacing between each match (0 to create single BracketNode)
          */
         private void createBracketColumn(int startX, int startY, int nodeWidth, int yDiff, int matchCount, int yIncrement) {
             int y = startY;
@@ -484,7 +489,7 @@ public class BracketPane extends BorderPane {
                     int bracketIndex = tmpHelp.get(j);
                     String teamName = currentBracket.getBracket().get(bracketIndex);
                     if (comparisonBracketRef != null) {
-                       aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
+                        aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
                     } else {
                         aNodeList.get(j).setName(teamName);
                     }
@@ -560,7 +565,7 @@ public class BracketPane extends BorderPane {
 
                 //by Tyler - added the last two pieces of info to the pop up window
                 text += "Team: " + teamName + " | Ranking: " + t.getRanking() + "\nMascot: " + t.getNickname() +
-                    "\nInfo: " + t.getInfo() + "\nAverage Offensive PPG: " + t.getOffensePPG() + "\nAverage Defensive PPG: " + t.getDefensePPG();
+                        "\nInfo: " + t.getInfo() + "\nAverage Offensive PPG: " + t.getOffensePPG() + "\nAverage Defensive PPG: " + t.getDefensePPG();
                 //create a popup with the team info
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION, text, ButtonType.CLOSE);
                 alert.setTitle("March Madness Bracket Simulator");
@@ -594,28 +599,29 @@ public class BracketPane extends BorderPane {
                 name.setText(teamName + " R:" + t.getRanking());
             }
         }
-        
+
 
         /**
          * Sets the name and updates display with score and prediction feedback
-         * @param teamName The team name
+         *
+         * @param teamName     The team name
          * @param bracketIndex The index in the bracket (used for coloring and scoring)
          */
         // Pranshu worked on this: show actual winner on wrong picks and add hover tooltip feedback
         public void setNameWithScore(String teamName, int bracketIndex) {
-           this.teamName = teamName;
-            
+            this.teamName = teamName;
+
             // System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
             // System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
-            
+
             // Only set display text if teamName is not empty
             if (!teamName.isEmpty()) {
                 // DEBUG: Force text to show scores
                 int score = (comparisonBracket != null) ? comparisonBracket.getTeamScore(bracketIndex) : currentBracket.getTeamScore(bracketIndex);
                 String displayText = teamName + " (" + score + ")";
-                
+
                 System.out.println("  displayText=" + displayText);
-                
+
                 // Apply coloring only if there's a meaningful comparison
                 Tooltip tooltip = new Tooltip();
                 if (comparisonBracket != null) {
@@ -630,15 +636,14 @@ public class BracketPane extends BorderPane {
                         tooltip.setText("Your pick: " + teamName);
                     }
                 }
-                
-               name.setText(displayText);
+
+                name.setText(displayText);
                 Tooltip.install(this, tooltip);
             } else {
-               name.setText("");
+                name.setText("");
                 this.setStyle(null);
                 Tooltip.uninstall(this, null);
             }
         }
     }
-
 }
