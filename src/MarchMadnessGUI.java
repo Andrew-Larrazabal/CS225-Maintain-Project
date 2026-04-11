@@ -246,28 +246,28 @@ public class MarchMadnessGUI extends Application {
             displayPane(bracketPane);
             progressMeter.reset(); // bandana : resets the progressmeter when bracket is reset.
         }
+
     }
     
     private void finalizeBracket(){
-       if(bracketPane.isComplete()){
-           btoolBar.setDisable(true);
-           bracketPane.setDisable(true);
-           simulate.setDisable(false);
-           login.setDisable(false);
-           //save the bracket along with account info
-           seralizeBracket(selectedBracket);
-            
-       }else{
-            infoAlert("You can only finalize a bracket once it has been completed.");
+        // Edited by: Jasper Carr
+        if (bracketPane.isComplete()) {
+            bracketPane.setFinalized(true);
+            bracketPane.setDisable(true);
+
+            // keep bottom toolbar disabled until simulation finishes
+            btoolBar.setDisable(true);
+
+            simulate.setDisable(false);
+            login.setDisable(false);
+
+            seralizeBracket(selectedBracket);
             //go back to bracket section selection screen
             // bracketPane=new BracketPane(selectedBracket);
             displayPane(bracketPane);
         
        }
        //bracketPane=new BracketPane(selectedBracket);
-      
-      
-        
     }
     
     
@@ -557,16 +557,43 @@ public class MarchMadnessGUI extends Application {
      */
     private ArrayList<Bracket> loadBrackets()
     {   
+         /* old code which caused nullpointerexception
         ArrayList<Bracket> list=new ArrayList<Bracket>();
         File dir = new File(".");
         for (final File fileEntry : dir.listFiles()){
+	@@ -533,6 +626,37 @@ private ArrayList<Bracket> loadBrackets()
+            }
+        }
+        return list;
+         */
+
+        // Edited by: Jasper Carr
+        ArrayList<Bracket> list = new ArrayList<>();
+        File dir = new File(".");
+
+        // Check if directory is valid
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Directory not found: " + dir.getAbsolutePath());
+            return list;
+        }
+
+        File[] files = dir.listFiles();
+
+        // Prevent NullPointerException
+        if (files == null) {
+            System.out.println("Could not read files in directory.");
+            return list;
+        }
+
+        for (final File fileEntry : files) {
             String fileName = fileEntry.getName();
-            String extension = fileName.substring(fileName.lastIndexOf(".")+1);
-       
-            if (extension.equals("ser")){
+
+            // extension check
+            if (fileName.endsWith(".ser")) {
                 list.add(deseralizeBracket(fileName));
             }
         }
+
         return list;
     }
        
