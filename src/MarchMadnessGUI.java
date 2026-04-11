@@ -116,6 +116,14 @@ public class MarchMadnessGUI extends Application {
         Scene scene = new Scene(root);
         primaryStage.setMaximized(true);
 
+        // Luke
+        // Saves bracket when window is closed
+        primaryStage.setOnCloseRequest(e -> {
+        if (selectedBracket != null) {
+            serializeBracket(selectedBracket);
+        }
+    });
+
         primaryStage.setTitle("March Madness Bracket Simulator");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -159,6 +167,7 @@ public class MarchMadnessGUI extends Application {
      * Displays the login screen
      * 
      */
+<<<<<<< HEAD
         private void login(){
         //
         if (selectedBracket != null) {
@@ -175,6 +184,14 @@ public class MarchMadnessGUI extends Application {
 
         //
         login.setText("Login");
+=======
+    private void login(){ 
+        // Luke
+        // Saves bracket progess before returning to login screen, even if incomplete
+        if (selectedBracket != null && !bracketPane.isComplete()) {
+            serializeBracket(selectedBracket);
+        }
+>>>>>>> 6b62c694aae030407d5dbbaebd537a470708749b
         login.setDisable(true);
         simulate.setDisable(true);
         scoreBoardButton.setDisable(true);
@@ -253,6 +270,11 @@ public class MarchMadnessGUI extends Application {
     }
     
     private void finalizeBracket(){
+        // Luke
+        // Code changed to save bracket even if it is incomplete
+        // Still prevents user from simulating with incomplete bracket
+        serializeBracket(selectedBracket);
+        
        if(bracketPane.isComplete()){
            btoolBar.setDisable(true);
            bracketPane.setDisable(true);
@@ -260,9 +282,8 @@ public class MarchMadnessGUI extends Application {
            login.setDisable(false);
            //save the bracket along with account info
            seralizeBracket(selectedBracket);
-            
        }else{
-            infoAlert("You can only finalize a bracket once it has been completed.");
+            infoAlert("Bracket Saved. You cannot simulate until bracket is complete.");
             //go back to bracket section selection screen
             // bracketPane=new BracketPane(selectedBracket);
             displayPane(bracketPane);
