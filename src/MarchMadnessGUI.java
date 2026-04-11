@@ -75,6 +75,8 @@ public class MarchMadnessGUI extends Application {
     private BracketPane bracketPane;
     private GridPane loginP;
     private TournamentInfo teamInfo;
+
+    private ProgressMeter progressMeter; // Bandana: progess meter showing the completness of your bracket
     
     
     @Override
@@ -101,11 +103,13 @@ public class MarchMadnessGUI extends Application {
         scoreBoard= new ScoreBoardTable();
         table=scoreBoard.start();
         loginP=createLogin();
+        progressMeter = new ProgressMeter(); // bandana :initialize progress meter for tracking bracket completion
         CreateToolBars();
         
         //display login screen
         login();
         
+
         setActions();
         root.setTop(toolBar);   
         root.setBottom(btoolBar);
@@ -179,7 +183,7 @@ public class MarchMadnessGUI extends Application {
     // Pranshu worked on this: render player's bracket with sim results comparison so feedback colors appear
     private void viewBracket(){
        // Show player's bracket (selectedBracket) with simulation results for comparison feedback
-       bracketPane=new BracketPane(selectedBracket, teamInfo, simulationHasOccurred ? simResultBracket : null, clearButton);
+       bracketPane=new BracketPane(selectedBracket, teamInfo, simulationHasOccurred ? simResultBracket : null, clearButton, progressMeter);
        GridPane full = bracketPane.getFullPane();
        full.setAlignment(Pos.CENTER);
        full.setDisable(true);
@@ -196,8 +200,9 @@ public class MarchMadnessGUI extends Application {
         btoolBar.setDisable(false);
         Bracket comparison = simulationHasOccurred ? simResultBracket : null;
         System.out.println("DEBUG chooseBracket called - simulationHasOccurred=" + simulationHasOccurred + ", comparison is null: " + (comparison == null));
-        bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
+        bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
         displayPane(bracketPane);
+        progressMeter.update(selectedBracket); //Bandana : updates progress meter when the user is filling the bracket
 
     }
     /**
@@ -209,8 +214,9 @@ public class MarchMadnessGUI extends Application {
       bracketPane.clear();
 
       Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-      bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
+      bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
       displayPane(bracketPane);
+      progressMeter.update(selectedBracket); //bandana: update the progress meter to reflect cleared picks.
         
 
     }
@@ -224,8 +230,9 @@ public class MarchMadnessGUI extends Application {
             //horrible hack to reset
             selectedBracket=new Bracket(startingBracket);
             Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
+            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
             displayPane(bracketPane);
+            progressMeter.reset(); // bandana : resets the progressmeter when bracket is reset.
         }
     }
     
@@ -291,8 +298,11 @@ public class MarchMadnessGUI extends Application {
                 resetButton,
                 finalizeButton,
                 back=new Button("Choose Division"),
+                progressMeter, //bandana : Display progres meter.
                 createSpacer()
+                
         );
+
     }
     
    /**
@@ -308,7 +318,7 @@ public class MarchMadnessGUI extends Application {
         finalizeButton.setOnAction(e->finalizeBracket());
         back.setOnAction(e->{
             Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
+            bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
             displayPane(bracketPane);
         });
     }
