@@ -212,11 +212,13 @@ public class MarchMadnessGUI extends Application {
     // Pranshu worked on this: rebuild cleared bracket with sim comparison if available
     private void clear(){
       bracketPane.clear();
+
       Bracket comparison = simulationHasOccurred ? simResultBracket : null;
       bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
       displayPane(bracketPane);
       progressMeter.update(selectedBracket); //bandana: update the progress meter to reflect cleared picks.
         
+
     }
     
     /**
