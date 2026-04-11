@@ -159,12 +159,28 @@ public class MarchMadnessGUI extends Application {
      * Displays the login screen
      * 
      */
-    private void login(){            
+        private void login(){
+        //
+        if (selectedBracket != null) {
+            seralizeBracket(selectedBracket);
+        }
+
+        // clear current session
+        selectedBracket = null;
+        bracketPane = null;
+
+        //
+        loginP = createLogin();
+        progressMeter.reset();
+
+        //
+        login.setText("Login");
         login.setDisable(true);
         simulate.setDisable(true);
         scoreBoardButton.setDisable(true);
         viewBracketButton.setDisable(true);
         btoolBar.setDisable(true);
+
         displayPane(loginP);
     }
     
@@ -195,15 +211,15 @@ public class MarchMadnessGUI extends Application {
      * 
      */
     // Pranshu worked on this: pass simulation comparison to bracket views after simulation
-    private void chooseBracket(){
-        //login.setDisable(true);
+        private void chooseBracket(){
+        login.setDisable(false);
+        login.setText("Logout");
         btoolBar.setDisable(false);
         Bracket comparison = simulationHasOccurred ? simResultBracket : null;
         System.out.println("DEBUG chooseBracket called - simulationHasOccurred=" + simulationHasOccurred + ", comparison is null: " + (comparison == null));
         bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton,progressMeter);
         displayPane(bracketPane);
-        progressMeter.update(selectedBracket); //Bandana : updates progress meter when the user is filling the bracket
-
+        progressMeter.update(selectedBracket);// Bandana: updates progress meter when the user is filling the bracket
     }
     /**
      * resets current selected sub tree

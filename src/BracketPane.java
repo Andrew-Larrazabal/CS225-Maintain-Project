@@ -141,7 +141,7 @@ public class BracketPane extends BorderPane {
      * TODO: Reduce. reuse, recycle!
      * Initializes the properties needed to construct a bracket.
      */
-    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton) {
+    public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton, ProgressMeter progressMeter) {
         // System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
         this.clearButton = clearButton;
         displayedSubtree=0;
@@ -641,3 +641,4 @@ public class BracketPane extends BorderPane {
         }
     }
 
+}
