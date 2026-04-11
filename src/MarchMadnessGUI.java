@@ -147,6 +147,16 @@ public class MarchMadnessGUI extends Application {
         // Re-enable the bottom toolbar after simulation so Reset / Clear / Back work again
         btoolBar.setDisable(false);
 
+        // After simulation, the bracket should not be finalized again
+        finalizeButton.setDisable(true);
+
+        // also prevent clearing picks after simulation
+        clearButton.setDisable(true);
+
+        // Keep reset available so the user can start over
+        resetButton.setDisable(false);
+        back.setDisable(false);
+
         // Start from a fresh copy every time the tournament is simulated
         simResultBracket = new Bracket(startingBracket);
         teamInfo.simulate(simResultBracket);
@@ -275,9 +285,22 @@ public class MarchMadnessGUI extends Application {
             // Save the reset bracket immediately
             seralizeBracket(selectedBracket);
 
-            // Rebuild the bracket view
-            Bracket comparison = simulationHasOccurred ? simResultBracket : null;
-            bracketPane = new BracketPane(selectedBracket, teamInfo, comparison, clearButton, progressMeter);
+            // Clear old simulation state so feedback disappears
+            simulationHasOccurred = false;
+
+            // Disable post-simulation views until the user finalizes and simulates again
+            scoreBoardButton.setDisable(true);
+            viewBracketButton.setDisable(true);
+            simulate.setDisable(true);
+
+            // Re-enable editing controls for the new bracket
+            finalizeButton.setDisable(false);
+            clearButton.setDisable(false);
+            resetButton.setDisable(false);
+            back.setDisable(false);
+
+            // Rebuild the bracket with no comparison bracket
+            bracketPane = new BracketPane(selectedBracket, teamInfo, null, clearButton, progressMeter);
             displayPane(bracketPane);
             progressMeter.reset(); // bandana : resets the progressmeter when bracket is reset.
         }
@@ -300,7 +323,7 @@ public class MarchMadnessGUI extends Application {
             //go back to bracket section selection screen
             // bracketPane=new BracketPane(selectedBracket);
             displayPane(bracketPane);
-        
+
        }
        //bracketPane=new BracketPane(selectedBracket);
     }
