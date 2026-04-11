@@ -9,15 +9,16 @@ import java.io.Serializable;
 public class Bracket implements Serializable //Hillary: This bracket class is to implement the serializable interface inorder to be serialized
 {
     //Attributes
+    public static final int EAST_BRACKET = 3;
+    public static final int WEST_BRACKET = 4;
+    public static final int MIDWEST_BRACKET = 5;
+    public static final int SOUTH_BRACKET = 6;
+    public static final long serialVersionUID = 5609181678399742983L;
     private ArrayList<String> bracket;
     private transient int[] teamScores = new int[127];
     private String playerName;
     private String password;
-    static final int EAST_BRACKET = 3;
-    static final int WEST_BRACKET = 4;
-    static final int MIDWEST_BRACKET = 5;
-    static final int SOUTH_BRACKET = 6;
-    public static final long serialVersionUID = 5609181678399742983L;
+
 
     //Constructor
     /**
@@ -99,10 +100,11 @@ public class Bracket implements Serializable //Hillary: This bracket class is to
             int child1 = 2 * root + 1;
             int child2 = 2 * root + 2;
 
-            if (child1 < 64) {//child is above round 1
+            //ANDREW: Changed the numbers to fix the Villanova's dissapearnace when clearing
+            if (child1 < 63) {//child is above round 1
                 resetSubtree(child1);
             }
-            if (child2 < 64) {
+            if (child2 < 63) {
                 resetSubtree(child2);
             }
             bracket.set(root, "");

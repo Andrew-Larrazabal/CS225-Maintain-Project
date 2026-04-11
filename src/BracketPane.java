@@ -28,13 +28,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-<<<<<<< HEAD:CS225-March-Madness/src/BracketPane.java
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
-=======
->>>>>>> Pranshu:src/BracketPane.java
 /**
  * Created by Richard and Ricardo on 5/3/17.
  */
@@ -146,7 +140,7 @@ public class BracketPane extends BorderPane {
      * Initializes the properties needed to construct a bracket.
      */
     public BracketPane(Bracket currentBracket, TournamentInfo teamInfo, Bracket comparisonBracket, Button clearButton) {
-        System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
+        // System.out.println("DEBUG BracketPane constructor - comparisonBracket is null: " + (comparisonBracket == null));
         this.clearButton = clearButton;
         displayedSubtree=0;
         this.currentBracket = currentBracket;
@@ -413,7 +407,7 @@ public class BracketPane extends BorderPane {
         public DivisionPane(int location, Bracket comparisonBracketRef) {
             this.location = location;
             this.comparisonBracketRef = comparisonBracketRef;
-            System.out.println("DEBUG DivisionPane created - comparisonBracketRef is null: " + (comparisonBracketRef == null));
+            // System.out.println("DEBUG DivisionPane created - comparisonBracketRef is null: " + (comparisonBracketRef == null));
             //CLEANUP(Josh): Use while loop, calculate parameters algorithmically instead of hardcoding
             int matchCount = INITIAL_MATCHES;
             int startX = PADDING;
@@ -588,7 +582,7 @@ public class BracketPane extends BorderPane {
          * @param teamName The name to assign to the node.
          *///Tristan added showign ranking next to names
         public void setName(String teamName) {
-            System.out.println("DEBUG setName called (NOT setNameWithScore): " + teamName);
+            // System.out.println("DEBUG setName called (NOT setNameWithScore): " + teamName);
             this.teamName = teamName;
             if (this.teamName.isBlank()) {
                 name.setText(teamName);
@@ -596,8 +590,8 @@ public class BracketPane extends BorderPane {
                 Team t = teamInfo.getTeam(teamName);
                 name.setText(teamName + " R:" + t.getRanking());
             }
-    }
         }
+        
 
         /**
          * Sets the name and updates display with score and prediction feedback
@@ -608,8 +602,8 @@ public class BracketPane extends BorderPane {
         public void setNameWithScore(String teamName, int bracketIndex) {
             this.teamName = teamName;
             
-            System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
-            System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
+            // System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
+            // System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
             
             // Only set display text if teamName is not empty
             if (!teamName.isEmpty()) {

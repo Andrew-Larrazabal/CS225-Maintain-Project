@@ -207,13 +207,12 @@ public class MarchMadnessGUI extends Application {
     // Pranshu worked on this: rebuild cleared bracket with sim comparison if available
     private void clear(){
       bracketPane.clear();
-<<<<<<< HEAD:CS225-March-Madness/src/MarchMadnessGUI.java
-=======
+
       Bracket comparison = simulationHasOccurred ? simResultBracket : null;
       bracketPane=new BracketPane(selectedBracket, teamInfo, comparison, clearButton);
       displayPane(bracketPane);
         
->>>>>>> Pranshu:src/MarchMadnessGUI.java
+
     }
     
     /**
