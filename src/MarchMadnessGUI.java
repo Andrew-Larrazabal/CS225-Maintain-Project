@@ -144,6 +144,9 @@ public class MarchMadnessGUI extends Application {
         scoreBoardButton.setDisable(false);
         viewBracketButton.setDisable(false);
 
+        // Re-enable the bottom toolbar after simulation so Reset / Clear / Back work again
+        btoolBar.setDisable(false);
+
         // Start from a fresh copy every time the tournament is simulated
         simResultBracket = new Bracket(startingBracket);
         teamInfo.simulate(simResultBracket);
