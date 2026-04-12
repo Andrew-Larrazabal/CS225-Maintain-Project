@@ -597,17 +597,16 @@ public class MarchMadnessGUI extends Application {
         Bracket bracket = null;
         FileInputStream inStream = null;
         ObjectInputStream in = null;
-    try 
-    {
-        inStream = new FileInputStream(filename);
-        in = new ObjectInputStream(inStream);
-        bracket = (Bracket) in.readObject();
-        in.close();
-    }catch (IOException | ClassNotFoundException e) {
-      // Grant osborn 5/6 hopefully this never happens either
-      showError(new Exception("Error loading bracket \n"+e.getMessage(),e),false);
-    } 
-    return bracket;
+        try {
+            inStream = new FileInputStream(filename);
+            in = new ObjectInputStream(inStream);
+            bracket = (Bracket) in.readObject();
+            in.close();
+        } catch (IOException | ClassNotFoundException e) {
+            // Grant osborn 5/6 hopefully this never happens either
+            showError(new Exception("Error loading bracket \n"+e.getMessage(),e),false);
+        }
+        return bracket;
     }
     
       /**
