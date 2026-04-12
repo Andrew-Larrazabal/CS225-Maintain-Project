@@ -158,7 +158,7 @@ public class MarchMadnessGUI extends Application {
     /**
      * Displays the login screen
      * 
-     */
+     *// David added logout and switching users, saves bracket, clears everything and goes back to the login screen
        private void login(){
         if (selectedBracket != null) {
             seralizeBracket(selectedBracket);
@@ -193,6 +193,7 @@ public class MarchMadnessGUI extends Application {
       * 
       */
     // Pranshu worked on this: render player's bracket with sim results comparison so feedback colors appear
+    // David updated the bracket flow to allow for logging out and switched the button to logout from login
     private void viewBracket(){
        // Show player's bracket (selectedBracket) with simulation results for comparison feedback
        bracketPane=new BracketPane(selectedBracket, teamInfo, simulationHasOccurred ? simResultBracket : null, clearButton, progressMeter);
