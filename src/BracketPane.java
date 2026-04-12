@@ -365,6 +365,28 @@ public class BracketPane extends BorderPane {
         return pane;
     }
 
+    //BUGFIX(Josh): In simulation view, display simulated bracket instead of user bracket
+    private Bracket getDisplayBracket() {
+        if (comparisonBracket == null) return currentBracket;
+        return comparisonBracket;
+    }
+
+    private String getTeamName(int location) {
+        return getDisplayBracket().getBracket().get(location);
+    }
+
+    //CLEANUP(Josh): Refactor out node name setting, which was duplicated in several places
+    private void setNodeTeamName(BracketNode node, int location) {
+        Bracket displayBracket = getDisplayBracket();
+        String teamName = getTeamName(location);
+
+        if (displayBracket == comparisonBracket) {
+            node.setNameWithScore(teamName, location);
+        } else {
+            node.setName(teamName);
+        }
+    }
+
     // Pranshu worked on this: widen final four/championship nodes and preserve color feedback on these nodes
     public Pane createFinalFour() {
         Pane finalPane = new Pane();
@@ -373,16 +395,13 @@ public class BracketPane extends BorderPane {
         int[] yPos = {300, 400, 400};
 
         for (int i = 0; i < xPos.length; i++) {
-            String teamName = currentBracket.getBracket().get(i);
-            BracketNode nodeFinal = new BracketNode(teamName, xPos[i], yPos[i], 200, 30, false);
+            BracketNode nodeFinal = new BracketNode("", xPos[i], yPos[i], 200, 30, false);
             finalPane.getChildren().add(nodeFinal);
             bracketMap.put(nodeFinal, i);
             nodeMap.put(i, nodeFinal);
 
             // Update display with scores and colors if comparison bracket exists
-            if (comparisonBracket != null) {
-                nodeFinal.setNameWithScore(teamName, i);
-            }
+            setNodeTeamName(nodeFinal, i);
 
             nodeFinal.setOnMouseClicked(clicked);
             nodeFinal.setOnMouseDragEntered(enter);
@@ -438,7 +457,6 @@ public class BracketPane extends BorderPane {
         }
 
         //CLEANUP(Josh): Gave method & parameters more descriptive names, added @params to Javadoc
-
         /**
          * The secret sauce... well not really,
          * Creates 3 lines in appropriate location unless it is the last line.
@@ -456,15 +474,11 @@ public class BracketPane extends BorderPane {
             if (matchCount == 0 && yIncrement == 0) {
                 BracketNode last = new BracketNode("", startX, y - 20, nodeWidth, 20, false);
                 nodes.add(last);
-                getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
-                String teamName = currentBracket.getBracket().get(location);
-                if (comparisonBracketRef != null) {
-                    last.setNameWithScore(teamName, location);
-                } else {
-                    last.setName(teamName);
-                }
                 bracketMap.put(last, location);
                 nodeMap.put(location, last);
+                getChildren().addAll(new Line(startX, startY, startX + nodeWidth, startY), last);
+
+                setNodeTeamName(last, location);
             } else {
                 ArrayList<BracketNode> aNodeList = new ArrayList<>();
                 for (int i = 0; i < matchCount; i++) {
@@ -487,14 +501,11 @@ public class BracketPane extends BorderPane {
                 ArrayList<Integer> tmpHelp = helper(location, matchCount);
                 for (int j = 0; j < aNodeList.size(); j++) {
                     int bracketIndex = tmpHelp.get(j);
-                    String teamName = currentBracket.getBracket().get(bracketIndex);
-                    if (comparisonBracketRef != null) {
-                        aNodeList.get(j).setNameWithScore(teamName, bracketIndex);
-                    } else {
-                        aNodeList.get(j).setName(teamName);
-                    }
-                    bracketMap.put(aNodeList.get(j), bracketIndex);
-                    nodeMap.put(bracketIndex, aNodeList.get(j));
+                    BracketNode node = aNodeList.get(j);
+
+                    bracketMap.put(node, bracketIndex);
+                    nodeMap.put(bracketIndex, node);
+                    setNodeTeamName(node, bracketIndex);
                 }
             }
 
@@ -611,8 +622,8 @@ public class BracketPane extends BorderPane {
         public void setNameWithScore(String teamName, int bracketIndex) {
             this.teamName = teamName;
 
-            // System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
-            // System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
+             System.out.println("DEBUG setNameWithScore called: team=" + teamName + ", index=" + bracketIndex);
+             System.out.println("  comparisonBracket is null: " + (comparisonBracket == null));
 
             // Only set display text if teamName is not empty
             if (!teamName.isEmpty()) {

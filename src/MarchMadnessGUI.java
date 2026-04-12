@@ -155,7 +155,7 @@ public class MarchMadnessGUI extends Application {
 
         // Keep reset available so the user can start over
         resetButton.setDisable(false);
-        back.setDisable(false);
+        back.setDisable(true);
 
         // Start from a fresh copy every time the tournament is simulated
         simResultBracket = new Bracket(startingBracket);
@@ -174,10 +174,11 @@ public class MarchMadnessGUI extends Application {
     /**
      * Displays the login screen
      * 
-     *// David added logout and switching users, saves bracket, clears everything and goes back to the login screen
+     */
+     // David added logout and switching users, saves bracket, clears everything and goes back to the login screen
        private void login(){
         if (selectedBracket != null) {
-            seralizeBracket(selectedBracket);
+            serializeBracket(selectedBracket);
         }
 
         selectedBracket = null;
@@ -284,7 +285,7 @@ public class MarchMadnessGUI extends Application {
             replaceSelectedBracket(freshBracket);
 
             // Save the reset bracket immediately
-            seralizeBracket(selectedBracket);
+            serializeBracket(selectedBracket);
 
             // Clear old simulation state so feedback disappears
             simulationHasOccurred = false;
@@ -320,7 +321,7 @@ public class MarchMadnessGUI extends Application {
             simulate.setDisable(false);
             login.setDisable(false);
 
-            seralizeBracket(selectedBracket);
+            serializeBracket(selectedBracket);
             //go back to bracket section selection screen
             // bracketPane=new BracketPane(selectedBracket);
             displayPane(bracketPane);
@@ -568,9 +569,9 @@ public class MarchMadnessGUI extends Application {
     /**
      * Tayon Watson 5/5
      * seralizedBracket
-     * @param B The bracket the is going to be seralized
+     * @param B The bracket the is going to be serialized
      */
-    private void seralizeBracket(Bracket B){
+    private void serializeBracket(Bracket B){
         FileOutputStream outStream = null;
         ObjectOutputStream out = null;
     try 
